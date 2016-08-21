@@ -8,13 +8,11 @@ import hudson.slaves.Cloud;
 import hudson.slaves.NodeProvisioner;
 import hudson.slaves.NodeProvisioner.PlannedNode;
 import java.util.Collection;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static java.util.logging.Logger.getLogger;
 import javax.annotation.Nonnull;
 import jenkins.model.Jenkins;
-import static jenkins.model.Jenkins.getActiveInstance;
 
 /**
  *
@@ -35,12 +33,14 @@ public class NomadProvisioningStrategy extends NodeProvisioner.Strategy {
         final Label label = strategyState.getLabel();
         LoadStatisticsSnapshot snapshot = strategyState.getSnapshot();
         for ( Cloud nomadCloud : Jenkins.getActiveInstance().clouds ){
-            if (nomadCloud instanceof NomadCloud)
-            {
-
+            if ( nomadCloud instanceof NomadCloud ) {
+                
+                LOGGER.log(Level.INFO, "Available executors={0} connecting executors={1} AdditionalPlannedCapacity={2} pending ={3}", 
+                        new Object[]{snapshot.getAvailableExecutors(), snapshot.getConnectingExecutors(), strategyState.getAdditionalPlannedCapacity(),((NomadCloud)nomadCloud).getPending() });
                 int availableCapacity = snapshot.getAvailableExecutors() +
                         snapshot.getConnectingExecutors() +
-                        strategyState.getAdditionalPlannedCapacity();
+                        strategyState.getAdditionalPlannedCapacity() + 
+                        ((NomadCloud)nomadCloud).getPending();
 
                 int currentDemand = snapshot.getQueueLength();
 

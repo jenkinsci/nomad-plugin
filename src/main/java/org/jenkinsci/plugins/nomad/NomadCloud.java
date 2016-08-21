@@ -31,6 +31,7 @@ public class NomadCloud extends AbstractCloudImpl {
     private String jenkinsUrl;
     private String slaveUrl;
     private NomadApi nomad;
+    private int pending = 0;
 
     @DataBoundConstructor
     public NomadCloud(
@@ -82,7 +83,8 @@ public class NomadCloud extends AbstractCloudImpl {
         if (template != null) {
             try {
                 while (excessWorkload > 0) {
-                    LOGGER.log(Level.INFO, "Excess workload, provisioning new Jenkins slave on Nomad cluster");
+                    
+                    LOGGER.log(Level.INFO, "Excess workload of " + excessWorkload + ", provisioning new Jenkins slave on Nomad cluster");
 
                     final String slaveName = template.createSlaveName();
                     nodes.add(new NodeProvisioner.PlannedNode(
@@ -91,6 +93,7 @@ public class NomadCloud extends AbstractCloudImpl {
                                     new ProvisioningCallback(slaveName, template, this)
                             ), template.getNumExecutors()));
                     excessWorkload -= template.getNumExecutors();
+                    pending++;
                 }
                 return nodes;
             } catch (Exception e) {
@@ -164,7 +167,7 @@ public class NomadCloud extends AbstractCloudImpl {
                 future.cancel(true);
                 executorService.shutdown();
             }
-
+            pending--;
             return slave;
         }
     }
@@ -245,6 +248,10 @@ public class NomadCloud extends AbstractCloudImpl {
     }
     public void setNomad(NomadApi nomad) {
         this.nomad = nomad;
+    }
+    public int getPending()
+    {
+        return pending;
     }
 
     public List<NomadSlaveTemplate> getTemplates() {
