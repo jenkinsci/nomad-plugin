@@ -93,7 +93,7 @@ public class NomadCloud extends AbstractCloudImpl {
                                     new ProvisioningCallback(slaveName, template, this)
                             ), template.getNumExecutors()));
                     excessWorkload -= template.getNumExecutors();
-                    pending++;
+                    pending += template.getNumExecutors();
                 }
                 return nodes;
             } catch (Exception e) {
@@ -167,7 +167,7 @@ public class NomadCloud extends AbstractCloudImpl {
                 future.cancel(true);
                 executorService.shutdown();
             }
-            pending--;
+            pending -= template.getNumExecutors();
             return slave;
         }
     }
