@@ -133,8 +133,7 @@ public final class NomadApi {
                 buildDriverConfig(name, secret,template),
                 new Resource(
                     template.getCpu(),
-                    template.getMemory(),
-                    template.getDisk()
+                    template.getMemory()
                 ),
                 new LogConfig(1, 10),
                 new Artifact[]{
@@ -146,7 +145,8 @@ public final class NomadApi {
                 "jenkins-slave-taskgroup",
                 1,
                 new Task[]{task},
-                new RestartPolicy(0, 10000000000L, 1000000000L, "fail")
+                new RestartPolicy(0, 10000000000L, 1000000000L, "fail"),
+                new EphemeralDisk(template.getDisk(), false, false)
         );
 
         Job job = new Job(

@@ -5,13 +5,14 @@ public class TaskGroup {
     private Integer Count;
     private Task[] Tasks;
     private RestartPolicy RestartPolicy;
+    private EphemeralDisk EphemeralDisk;
 
-    public TaskGroup(String name, Integer count, Task[] tasks, RestartPolicy restartPolicy) {
+    public TaskGroup(String name, Integer count, Task[] tasks, RestartPolicy restartPolicy, EphemeralDisk ephemeralDisk) {
         Name = name;
         Count = count;
         Tasks = tasks;
         RestartPolicy = restartPolicy;
-
+        EphemeralDisk = ephemeralDisk;
     }
 
     public String getName() {
@@ -44,5 +45,13 @@ public class TaskGroup {
 
     public void setRestartPolicy(RestartPolicy restartPolicy) {
         RestartPolicy = restartPolicy;
+    }
+
+    public EphemeralDisk getEphemeralDisk() {
+        return EphemeralDisk;
+    }
+
+    public void setEphemeralDisk(EphemeralDisk ephemeralDisk) {
+        EphemeralDisk = ephemeralDisk;
     }
 }
