@@ -124,6 +124,16 @@ public final class NomadApi {
             driverConfig.put("force_pull", template.getForcePull());
             driverConfig.put("privileged", template.getPrivileged());
             driverConfig.put("network_mode", template.getNetwork());
+
+            String extraHosts = template.getExtraHosts();
+            if (!extraHosts.isEmpty()) {
+                driverConfig.put("extra_hosts", StringUtils.split(extraHosts, ", "));
+            }
+
+            String capAdd = template.getCapAdd();
+            if (!capAdd.isEmpty()) {
+                driverConfig.put("cap_add", StringUtils.split(capAdd, ", "));
+            }
         }
 
         return driverConfig;

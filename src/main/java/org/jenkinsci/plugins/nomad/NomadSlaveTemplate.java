@@ -48,6 +48,8 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final String hostVolumes;
     private final String switchUser;
     private final Node.Mode mode;
+    private final String extraHosts;
+    private final String capAdd;
 
     private NomadCloud cloud;
     private String driver;
@@ -77,7 +79,9 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             String prefixCmd,
             Boolean forcePull,
             String hostVolumes,
-            String switchUser
+            String switchUser,
+            String extraHosts,
+            String capAdd
             ) {
         this.cpu = Integer.parseInt(cpu);
         this.memory = Integer.parseInt(memory);
@@ -106,6 +110,8 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.forcePull = forcePull;
         this.hostVolumes = hostVolumes;
         this.switchUser = switchUser;
+        this.extraHosts = extraHosts;
+        this.capAdd = capAdd;
         readResolve();
     }
 
@@ -241,5 +247,13 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public String getSwitchUser() {
         return switchUser;
+    }
+
+    public String getCapAdd() {
+        return capAdd;
+    }
+
+    public String getExtraHosts() {
+        return extraHosts;
     }
 }

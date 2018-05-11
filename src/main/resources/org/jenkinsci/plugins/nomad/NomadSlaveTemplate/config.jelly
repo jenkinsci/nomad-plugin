@@ -84,6 +84,12 @@
             <f:entry title="Switch User" field="switchUser">
                 <f:textbox name="switchUser" field="switchUser" default="" />
             </f:entry>
+            <f:entry title="Extra Hosts" field="extraHosts">
+                <f:textbox name="extraHosts" field="extraHosts" default="" />
+            </f:entry>
+            <f:entry title="Add Capabilities" field="capAdd">
+                <f:textbox name="capAdd" field="capAdd" default="" />
+            </f:entry>
         </f:optionalBlock>
 
         <f:entry title="">
