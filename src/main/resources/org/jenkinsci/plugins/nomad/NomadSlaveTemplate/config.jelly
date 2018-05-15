@@ -75,6 +75,9 @@
             <f:entry title="Host Volumes" field="hostVolumes">
                 <f:textbox name="hostVolumes" field="hostVolumes" default="" />
             </f:entry>
+            <f:entry title="Host Devices" field="hostDevices">
+                <f:textbox name="hostDevices" field="hostDevices" default="" />
+            </f:entry>
             <f:entry title="Network">
                 <f:textbox name="network" field="network" default="bridge"/>
             </f:entry>

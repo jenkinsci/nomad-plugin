@@ -3,18 +3,20 @@ package org.jenkinsci.plugins.nomad;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import hudson.Util;
-import okhttp3.*;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.nomad.Api.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.lang.StringUtils;
-
-import java.util.List;
 
 public final class NomadApi {
 
@@ -120,6 +122,11 @@ public final class NomadApi {
                 driverConfig.put("volumes", StringUtils.split(hostVolumes, ","));
             }
 
+            String hostDevices = template.getHostDevices();
+            if (!hostDevices.isEmpty()) {
+                driverConfig.put("devices", parseDeviceMappings(StringUtils.split(hostDevices, ",")));
+            }
+
             driverConfig.put("args", args);
             driverConfig.put("force_pull", template.getForcePull());
             driverConfig.put("privileged", template.getPrivileged());
@@ -127,6 +134,35 @@ public final class NomadApi {
         }
 
         return driverConfig;
+    }
+
+    /**
+     * Parses docker-style values to nomad config as here: https://www.nomadproject.io/docs/drivers/docker.html#devices
+     * @param mappings list of 'docker --device=' values
+     * @return array of map objects (see url)
+     */
+
+     private Map[] parseDeviceMappings(String[] mappings) {
+        final String HOST_PATH = "host_path";
+        final String CONT_PATH = "container_path";
+        final String PERMISSIONS = "cgroup_permissions";
+
+        Map[] result = new Map[mappings.length];
+        for (int i = 0; i < mappings.length; i += 1) {
+            String[] parts = StringUtils.split(mappings[i], ":");
+            HashMap<String, String> map = new HashMap<>();
+            map.put(HOST_PATH, parts[0]);
+            try {
+                map.put(CONT_PATH, parts[1]);
+                map.put(PERMISSIONS, parts[2]);
+            } catch (ArrayIndexOutOfBoundsException ex) {
+                // missing either container path or permissions, neither one is mandatory, can ignore it
+            }
+
+            result[i] = map;
+
+        }
+        return result;
     }
 
     String buildSlaveJob(

@@ -4,10 +4,11 @@ import hudson.model.Node;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import static org.junit.Assert.assertTrue;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Yegor Andreenko
@@ -20,7 +21,7 @@ public class NomadApiTest {
             "300", "256", "100",
             null, constraintTest, "remoteFs", "3", true, "1", Node.Mode.NORMAL,
             "ams", "0", "image", "dc01", "", "", false, "bridge",
-            "", true, "/mnt:/mnt", "jenkins"
+            "", true, "/mnt:/mnt", "/dev:/dev,/dev,/dev/usb/0:/dev/usb:r", "jenkins"
     );
 
     private NomadCloud nomadCloud = new NomadCloud(
@@ -37,7 +38,7 @@ public class NomadApiTest {
 
     @Test
     public void testStartSlave() {
-        String job = nomadApi.buildSlaveJob("slave-1","secret", slaveTemplate);
+        String job = nomadApi.buildSlaveJob("slave-1", "secret", slaveTemplate);
 
         assertTrue(job.contains("\"Region\":\"ams\""));
         assertTrue(job.contains("\"CPU\":300"));
@@ -48,6 +49,7 @@ public class NomadApiTest {
         assertTrue(job.contains("\"network_mode\":\"bridge\""));
         assertTrue(job.contains("\"force_pull\":true"));
         assertTrue(job.contains("\"volumes\":[\"/mnt:/mnt\"]"));
+        assertTrue(job.contains("\"devices\":[{\"host_path\":\"/dev\",\"container_path\":\"/dev\"},{\"host_path\":\"/dev\"},{\"host_path\":\"/dev/usb/0\",\"cgroup_permissions\":\"r\",\"container_path\":\"/dev/usb\"}]"));
         assertTrue(job.contains("\"User\":\"jenkins\""));
     }
 

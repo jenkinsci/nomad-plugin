@@ -1,8 +1,6 @@
 package org.jenkinsci.plugins.nomad;
 
 import hudson.Extension;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -10,16 +8,12 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.lang.reflect.Type;
-import com.google.gson.reflect.TypeToken;
-
-import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
@@ -46,6 +40,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final String prefixCmd;
     private final Boolean forcePull;
     private final String hostVolumes;
+    private final String hostDevices;
     private final String switchUser;
     private final Node.Mode mode;
 
@@ -77,6 +72,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             String prefixCmd,
             Boolean forcePull,
             String hostVolumes,
+            String hostDevices,
             String switchUser
             ) {
         this.cpu = Integer.parseInt(cpu);
@@ -105,6 +101,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.prefixCmd = prefixCmd;
         this.forcePull = forcePull;
         this.hostVolumes = hostVolumes;
+        this.hostDevices = hostDevices;
         this.switchUser = switchUser;
         readResolve();
     }
@@ -237,6 +234,10 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public String getHostVolumes() {
         return hostVolumes;
+    }
+
+    public String getHostDevices() {
+        return hostDevices;
     }
 
     public String getSwitchUser() {
