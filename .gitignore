@@ -2,3 +2,8 @@
 target/
 work/
 nomad.iml
+.project
+.settings/
+.factorypath
+.classpath
+.vscode/

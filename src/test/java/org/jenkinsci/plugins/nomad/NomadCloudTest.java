@@ -21,6 +21,7 @@ public class NomadCloudTest {
             "nomadUrl",
             "jenkinsUrl",
             "slaveUrl",
+            "1",
             Collections.singletonList(slaveTemplate));
 
     @Before

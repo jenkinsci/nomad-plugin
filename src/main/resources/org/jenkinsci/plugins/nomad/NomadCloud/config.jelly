@@ -14,6 +14,10 @@
     <f:textbox default="${instance.getJenkinsUrl()}"/>
   </f:entry>
 
+  <f:entry title="Worker Startup Timeout" field="workerTimeout" description="Worker Startup timeout in minutes">
+    <f:textbox default="1"/>
+  </f:entry>
+
   <f:entry title="Jenkins Slave URL" field="slaveUrl" description="Jenkins slave URL">
     <f:textbox default="${instance.getSlaveUrl()}"/>
   </f:entry>
