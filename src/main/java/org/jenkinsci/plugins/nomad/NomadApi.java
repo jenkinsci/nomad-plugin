@@ -123,8 +123,14 @@ public final class NomadApi {
             }
 
             String hostDevices = template.getHostDevices();
-            if (!hostDevices.isEmpty()) {
+            if (hostDevices != null && !hostDevices.isEmpty()) {
                 driverConfig.put("devices", parseDeviceMappings(StringUtils.split(hostDevices, ",")));
+            }
+
+            String shmSize = template.getSharedMemory();
+            if (shmSize != null && !shmSize.isEmpty()) {
+                // if not defined, keep it unspecified for default value
+                driverConfig.put("shm_size", Double.parseDouble(shmSize));
             }
 
             driverConfig.put("args", args);

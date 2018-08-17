@@ -39,6 +39,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final String password;
     private final String prefixCmd;
     private final Boolean forcePull;
+    private final String sharedMem;
     private final String hostVolumes;
     private final String hostDevices;
     private final String switchUser;
@@ -70,6 +71,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             Boolean privileged,
             String network,
             String prefixCmd,
+            String sharedMemory,
             Boolean forcePull,
             String hostVolumes,
             String hostDevices,
@@ -100,6 +102,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.network = network;
         this.prefixCmd = prefixCmd;
         this.forcePull = forcePull;
+        this.sharedMem = sharedMemory;
         this.hostVolumes = hostVolumes;
         this.hostDevices = hostDevices;
         this.switchUser = switchUser;
@@ -230,6 +233,10 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public Boolean getForcePull() {
         return forcePull;
+    }
+
+    public String getSharedMemory() {
+        return sharedMem;
     }
 
     public String getHostVolumes() {

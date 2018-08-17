@@ -72,6 +72,9 @@
             <f:entry title="Privileged">
                 <f:checkbox name="privileged" field="privileged" default="false" value="${instance.privileged}" />
             </f:entry>
+            <f:entry title="Shared memory" field="sharedMemory">
+                <f:textbox/>
+            </f:entry>
             <f:entry title="Host Volumes" field="hostVolumes">
                 <f:textbox name="hostVolumes" field="hostVolumes" default="" />
             </f:entry>
