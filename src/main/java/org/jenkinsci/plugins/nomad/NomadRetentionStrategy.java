@@ -9,6 +9,10 @@ public class NomadRetentionStrategy extends CloudRetentionStrategy{
         super(idleMinutes);
     }
 
+    public NomadRetentionStrategy(String idleMinutes) {
+        super(Integer.parseInt(idleMinutes));
+    }
+
     public static class DescriptorImpl extends Descriptor<hudson.slaves.RetentionStrategy<?>> {
         @Override
         public String getDisplayName() {

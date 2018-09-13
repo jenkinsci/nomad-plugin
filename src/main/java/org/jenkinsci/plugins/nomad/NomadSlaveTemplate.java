@@ -11,15 +11,8 @@ import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import jenkins.model.Jenkins;
 
-import java.lang.reflect.Type;
-import com.google.gson.reflect.TypeToken;
-
-import javax.annotation.Nullable;
 import java.util.*;
 import java.util.logging.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
@@ -114,7 +107,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return this;
     }
 
-   
+
     @Extension
     public static final class DescriptorImpl extends Descriptor<NomadSlaveTemplate> {
 
@@ -145,7 +138,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     public int getNumExecutors() {
         return numExecutors;
     }
-    
+
     public Node.Mode getMode() {
         return mode;
     }
@@ -214,7 +207,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     public String getPassword() {
         return password;
     }
-    
+
     public String getPrefixCmd() {
         return prefixCmd;
     }

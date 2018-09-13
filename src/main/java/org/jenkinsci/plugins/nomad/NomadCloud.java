@@ -25,14 +25,17 @@ import java.util.logging.Logger;
 public class NomadCloud extends AbstractCloudImpl {
 
     private static final Logger LOGGER = Logger.getLogger(NomadCloud.class.getName());
+
     private final List<? extends NomadSlaveTemplate> templates;
-    private final String name;
+
     private final String nomadUrl;
     private String jenkinsUrl;
     private String slaveUrl;
-    private NomadApi nomad;
-    private int pending = 0;
     private int workerTimeout = 1;
+
+    private NomadApi nomad;
+
+    private int pending = 0;
 
     @DataBoundConstructor
     public NomadCloud(
@@ -44,9 +47,7 @@ public class NomadCloud extends AbstractCloudImpl {
             List<? extends NomadSlaveTemplate> templates)
     {
         super(name, null);
-        LOGGER.log(Level.WARNING, "testing if this is actually working: ");
 
-        this.name = name;
         this.nomadUrl = nomadUrl;
         this.jenkinsUrl = jenkinsUrl;
         this.slaveUrl = slaveUrl;
@@ -123,9 +124,8 @@ public class NomadCloud extends AbstractCloudImpl {
 
         public Node call() throws Exception {
             final NomadSlave slave = new NomadSlave(
-                    cloud,
                     slaveName,
-                    "Nomad Jenkins Slave",
+                    name,
                     template,
                     template.getLabels(),
                     new NomadRetentionStrategy(template.getIdleTerminationInMinutes()),
@@ -196,7 +196,7 @@ public class NomadCloud extends AbstractCloudImpl {
 
 
     @Extension
-    public static final class DescriptorImpl extends Descriptor<hudson.slaves.Cloud> {
+    public static final class DescriptorImpl extends Descriptor<Cloud> {
 
         public DescriptorImpl() {
             load();
@@ -231,7 +231,6 @@ public class NomadCloud extends AbstractCloudImpl {
     }
 
     // Getters
-
     public String getName() {
         return name;
     }

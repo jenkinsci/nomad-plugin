@@ -11,14 +11,11 @@ public class NomadComputer extends AbstractCloudComputer<NomadSlave> {
 
     private static final Logger LOGGER = Logger.getLogger(NomadComputer.class.getName());
 
-    private final NomadCloud cloud;
-
     private final Boolean reusable;
 
     public NomadComputer(NomadSlave slave) {
         super(slave);
 
-        this.cloud = slave.getCloud();
         this.reusable = slave.getReusable();
     }
 
