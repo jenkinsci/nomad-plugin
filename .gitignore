@@ -9,3 +9,4 @@ nomad.iml
 .vscode/
 .vagrant/
 Vagrantfile
+circleci/**
