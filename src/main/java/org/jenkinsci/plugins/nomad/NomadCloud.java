@@ -14,6 +14,8 @@ import hudson.util.FormValidation;
 import hudson.model.Label;
 import hudson.model.Node;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.verb.POST;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -206,7 +208,9 @@ public class NomadCloud extends AbstractCloudImpl {
             return "Nomad";
         }
 
+        @POST
         public FormValidation doTestConnection(@QueryParameter("nomadUrl") String nomadUrl) {
+            Jenkins.get().checkPermission(Jenkins.ADMINISTER);
             try {
                 Request request = new Request.Builder()
                         .url(nomadUrl + "/v1/agent/self")
