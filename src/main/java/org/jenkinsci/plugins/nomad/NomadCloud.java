@@ -1,19 +1,22 @@
 package org.jenkinsci.plugins.nomad;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.QueryParameter;
-import hudson.Extension;
-
-import hudson.slaves.*;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+import hudson.Extension;
 import hudson.model.Descriptor;
-import hudson.util.FormValidation;
 import hudson.model.Label;
 import hudson.model.Node;
+import hudson.slaves.AbstractCloudImpl;
+import hudson.slaves.NodeProperty;
+import hudson.slaves.NodeProvisioner;
+import hudson.util.FormValidation;
 import jenkins.model.Jenkins;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.interceptor.RequirePOST;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,7 +86,7 @@ public class NomadCloud extends AbstractCloudImpl {
         if (template != null) {
             try {
                 while (excessWorkload > 0) {
-                    
+
                     LOGGER.log(Level.INFO, "Excess workload of " + excessWorkload + ", provisioning new Jenkins slave on Nomad cluster");
 
                     final String slaveName = template.createSlaveName();
@@ -202,7 +205,9 @@ public class NomadCloud extends AbstractCloudImpl {
             return "Nomad";
         }
 
+        @RequirePOST
         public FormValidation doTestConnection(@QueryParameter("nomadUrl") String nomadUrl) {
+            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
             try {
                 Request request = new Request.Builder()
                         .url(nomadUrl + "/v1/agent/self")
