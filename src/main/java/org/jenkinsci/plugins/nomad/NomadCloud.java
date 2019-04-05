@@ -17,14 +17,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 public class NomadCloud extends AbstractCloudImpl {
 
     private static final Logger LOGGER = Logger.getLogger(NomadCloud.class.getName());
@@ -222,7 +218,9 @@ public class NomadCloud extends AbstractCloudImpl {
             }
         }
 
+        @RequirePOST
         public FormValidation doCheckName(@QueryParameter String name) {
+            Objects.requireNonNull(Jenkins.getInstance()).checkPermission(Jenkins.ADMINISTER);
             if (Strings.isNullOrEmpty(name)) {
                 return FormValidation.error("Name must be set");
             } else {
