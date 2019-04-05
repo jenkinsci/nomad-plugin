@@ -207,7 +207,7 @@ public class NomadCloud extends AbstractCloudImpl {
 
         @RequirePOST
         public FormValidation doTestConnection(@QueryParameter("nomadUrl") String nomadUrl) {
-            Jenkins.getInstance().checkPermission(Jenkins.ADMINISTER);
+            Objects.requireNonNull(Jenkins.getInstance()).checkPermission(Jenkins.ADMINISTER);
             try {
                 Request request = new Request.Builder()
                         .url(nomadUrl + "/v1/agent/self")
