@@ -223,9 +223,7 @@ public class NomadCloud extends AbstractCloudImpl {
             }
         }
 
-        @RequirePOST
         public FormValidation doCheckName(@QueryParameter String name) {
-            Objects.requireNonNull(Jenkins.getInstance()).checkPermission(Jenkins.ADMINISTER);
             if (Strings.isNullOrEmpty(name)) {
                 return FormValidation.error("Name must be set");
             } else {
