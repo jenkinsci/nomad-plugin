@@ -26,7 +26,6 @@ public class NomadCloud extends AbstractCloudImpl {
 
     private static final Logger LOGGER = Logger.getLogger(NomadCloud.class.getName());
     private final List<? extends NomadSlaveTemplate> templates;
-    private final String name;
     private final String nomadUrl;
     private String jenkinsUrl;
     private String jenkinsTunnel;
@@ -44,7 +43,6 @@ public class NomadCloud extends AbstractCloudImpl {
             List<? extends NomadSlaveTemplate> templates) {
         super(name, null);
 
-        this.name = name;
         this.nomadUrl = nomadUrl;
         this.jenkinsUrl = jenkinsUrl;
         this.jenkinsTunnel = jenkinsTunnel;
@@ -59,7 +57,7 @@ public class NomadCloud extends AbstractCloudImpl {
         readResolve();
     }
 
-    protected Object readResolve() {
+    private Object readResolve() {
         for (NomadSlaveTemplate template : this.templates) {
             template.setCloud(this);
         }
@@ -233,12 +231,7 @@ public class NomadCloud extends AbstractCloudImpl {
     }
 
     // Getters
-
-    public String getName() {
-        return name;
-    }
-
-    public String getNomadUrl() {
+    protected String getNomadUrl() {
         return nomadUrl;
     }
 
