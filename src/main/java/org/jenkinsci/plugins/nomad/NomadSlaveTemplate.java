@@ -44,6 +44,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final String hostDevices;
     private final String switchUser;
     private final Node.Mode mode;
+    private final List<? extends NomadPortTemplate> ports;
 
     private NomadCloud cloud;
     private String driver;
@@ -75,8 +76,9 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             Boolean forcePull,
             String hostVolumes,
             String hostDevices,
-            String switchUser
-            ) {
+            String switchUser,
+            List<? extends NomadPortTemplate> ports
+    ) {
         this.cpu = Integer.parseInt(cpu);
         this.memory = Integer.parseInt(memory);
         this.disk = Integer.parseInt(disk);
@@ -106,6 +108,11 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.hostVolumes = hostVolumes;
         this.hostDevices = hostDevices;
         this.switchUser = switchUser;
+        if (ports == null) {
+            this.ports = Collections.emptyList();
+        } else {
+            this.ports = ports;
+        }
         readResolve();
     }
 
@@ -114,7 +121,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return this;
     }
 
-   
+
     @Extension
     public static final class DescriptorImpl extends Descriptor<NomadSlaveTemplate> {
 
@@ -145,11 +152,10 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     public int getNumExecutors() {
         return numExecutors;
     }
-    
+
     public Node.Mode getMode() {
         return mode;
     }
-
 
     public int getCpu() {
         return cpu;
@@ -214,7 +220,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     public String getPassword() {
         return password;
     }
-    
+
     public String getPrefixCmd() {
         return prefixCmd;
     }
@@ -249,5 +255,9 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public String getSwitchUser() {
         return switchUser;
+    }
+
+    public List<? extends NomadPortTemplate> getPorts() {
+        return Collections.unmodifiableList(ports);
     }
 }

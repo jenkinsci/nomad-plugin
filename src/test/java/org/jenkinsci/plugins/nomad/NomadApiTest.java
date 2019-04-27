@@ -21,13 +21,16 @@ public class NomadApiTest {
             "300", "256", "100",
             null, constraintTest, "remoteFs", "3", true, "1", Node.Mode.NORMAL,
             "ams", "0", "image", "dc01", "", "", false, "bridge",
-            "", "2048", true, "/mnt:/mnt", "/dev:/dev,/dev,/dev/usb/0:/dev/usb:r", "jenkins"
+            "", "2048", true, "/mnt:/mnt",
+            "/dev:/dev,/dev,/dev/usb/0:/dev/usb:r", "jenkins", new ArrayList<NomadPortTemplate>() {
+    }
     );
 
     private NomadCloud nomadCloud = new NomadCloud(
             "nomad",
             "nomadUrl",
             "jenkinsUrl",
+            "jenkinsTunnel",
             "slaveUrl",
             Collections.singletonList(slaveTemplate));
 
