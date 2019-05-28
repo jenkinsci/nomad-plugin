@@ -1,6 +1,5 @@
 package org.jenkinsci.plugins.nomad;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import hudson.Extension;
 import hudson.model.Descriptor;
