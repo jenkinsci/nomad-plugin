@@ -3,7 +3,11 @@ package org.jenkinsci.plugins.nomad;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import hudson.Util;
-import okhttp3.*;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.nomad.Api.*;
 
 import java.io.IOException;
@@ -12,8 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.commons.lang.StringUtils;
-
 import java.util.List;
 
 public final class NomadApi {
@@ -72,13 +74,8 @@ public final class NomadApi {
     private Map<String,Object> buildDriverConfig(String name, String secret, NomadSlaveTemplate template) {
         Map<String,Object> driverConfig = new HashMap<>();
 
-        ArrayList<String> args = new ArrayList<>();
-        args.add("-jnlpUrl");
-
-        args.add(Util.ensureEndsWith(template.getCloud().getJenkinsUrl(), "/") + "computer/" + name + "/slave-agent.jnlp");
-
         if (template.getUsername() != null && !template.getUsername().isEmpty()) {
-            Map<String,String> authConfig = new HashMap<>();
+            Map<String, String> authConfig = new HashMap<>();
             authConfig.put("username", template.getUsername());
             authConfig.put("password", template.getPassword());
 
@@ -88,10 +85,30 @@ public final class NomadApi {
             driverConfig.put("auth", credentials);
         }
 
+        // java -cp /local/slave.jar hudson.remoting.jnlp.Main --help
+        ArrayList<String> args = new ArrayList<>();
+        args.add("-headless");
+
+        if (!template.getCloud().getJenkinsUrl().isEmpty()) {
+            args.add("-url");
+            args.add(template.getCloud().getJenkinsUrl());
+        }
+
+        if (!template.getCloud().getJenkinsTunnel().isEmpty()) {
+            args.add("-tunnel");
+            args.add(template.getCloud().getJenkinsTunnel());
+        }
+
+        if (!template.getRemoteFs().isEmpty()) {
+            args.add("-workDir");
+            args.add(Util.ensureEndsWith(template.getRemoteFs(), "/"));
+        }
+
+        // java -cp /local/slave.jar [options...] <secret key> <agent name>
         if (!secret.isEmpty()) {
-            args.add("-secret");
             args.add(secret);
         }
+        args.add(name);
 
         if (template.getDriver().equals("java")) {
             driverConfig.put("jar_path", "/local/slave.jar");
@@ -102,7 +119,8 @@ public final class NomadApi {
             if (!prefixCmd.isEmpty())
             {
                 driverConfig.put("command", "/bin/bash");
-                String argString = prefixCmd + "; java -jar /local/slave.jar ";
+                String argString =
+                        prefixCmd + "; java -cp /local/slave.jar hudson.remoting.jnlp.Main -headless ";
                 argString += StringUtils.join(args, " ");
                 args.clear();
                 args.add("-c");
@@ -110,8 +128,9 @@ public final class NomadApi {
             }
             else {
                 driverConfig.put("command", "java");
-                args.add(0, "-jar");
+                args.add(0, "-cp");
                 args.add(1, "/local/slave.jar");
+                args.add(2, "hudson.remoting.jnlp.Main");
             }
             driverConfig.put("image", template.getImage());
 
@@ -134,15 +153,21 @@ public final class NomadApi {
             String secret,
             NomadSlaveTemplate template
     ) {
+        PortGroup portGroup = new PortGroup(template.getPorts());
+        Network network = new Network(1, portGroup.getPorts());
+
+        ArrayList<Network> networks = new ArrayList<>(1);
+        networks.add(network);
 
         Task task = new Task(
                 "jenkins-slave",
                 template.getDriver(),
                 template.getSwitchUser(),
-                buildDriverConfig(name, secret,template),
+                buildDriverConfig(name, secret, template),
                 new Resource(
                     template.getCpu(),
-                    template.getMemory()
+                    template.getMemory(),
+                    networks
                 ),
                 new LogConfig(1, 10),
                 new Artifact[]{

@@ -1,8 +1,6 @@
 package org.jenkinsci.plugins.nomad;
 
 import hudson.Extension;
-import org.kohsuke.stapler.DataBoundConstructor;
-
 import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
@@ -10,16 +8,12 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.lang.reflect.Type;
-import com.google.gson.reflect.TypeToken;
-
-import javax.annotation.Nullable;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 
 public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
@@ -48,6 +42,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final String hostVolumes;
     private final String switchUser;
     private final Node.Mode mode;
+    private final List<? extends NomadPortTemplate> ports;
 
     private NomadCloud cloud;
     private String driver;
@@ -77,8 +72,9 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             String prefixCmd,
             Boolean forcePull,
             String hostVolumes,
-            String switchUser
-            ) {
+            String switchUser,
+            List<? extends NomadPortTemplate> ports
+    ) {
         this.cpu = Integer.parseInt(cpu);
         this.memory = Integer.parseInt(memory);
         this.disk = Integer.parseInt(disk);
@@ -106,6 +102,11 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.forcePull = forcePull;
         this.hostVolumes = hostVolumes;
         this.switchUser = switchUser;
+        if (ports == null) {
+            this.ports = Collections.emptyList();
+        } else {
+            this.ports = ports;
+        }
         readResolve();
     }
 
@@ -114,7 +115,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return this;
     }
 
-   
+
     @Extension
     public static final class DescriptorImpl extends Descriptor<NomadSlaveTemplate> {
 
@@ -145,11 +146,10 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     public int getNumExecutors() {
         return numExecutors;
     }
-    
+
     public Node.Mode getMode() {
         return mode;
     }
-
 
     public int getCpu() {
         return cpu;
@@ -214,7 +214,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     public String getPassword() {
         return password;
     }
-    
+
     public String getPrefixCmd() {
         return prefixCmd;
     }
@@ -241,5 +241,9 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public String getSwitchUser() {
         return switchUser;
+    }
+
+    public List<? extends NomadPortTemplate> getPorts() {
+        return Collections.unmodifiableList(ports);
     }
 }

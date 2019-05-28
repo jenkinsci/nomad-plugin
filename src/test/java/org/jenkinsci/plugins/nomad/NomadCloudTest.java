@@ -20,6 +20,7 @@ public class NomadCloudTest {
             "nomad",
             "nomadUrl",
             "jenkinsUrl",
+            "jenkinsTunnel",
             "slaveUrl",
             Collections.singletonList(slaveTemplate));
 
