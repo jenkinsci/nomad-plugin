@@ -165,6 +165,7 @@ public class NomadCloud extends AbstractCloudImpl {
             ExecutorService executorService = Executors.newCachedThreadPool();
             Future<Boolean> future = executorService.submit(callableTask);
 
+            try{
                 future.get(cloud.workerTimeout, TimeUnit.MINUTES);
                 LOGGER.log(Level.INFO, "Connection established");
             } catch (Exception ex) {
