@@ -10,9 +10,7 @@ import hudson.model.labels.LabelAtom;
 import jenkins.model.Jenkins;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {

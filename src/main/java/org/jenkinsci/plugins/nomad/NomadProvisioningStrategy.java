@@ -39,7 +39,7 @@ public class NomadProvisioningStrategy extends NodeProvisioner.Strategy {
                         new Object[]{snapshot.getAvailableExecutors(), snapshot.getConnectingExecutors(), strategyState.getAdditionalPlannedCapacity(),((NomadCloud)nomadCloud).getPending() });
                 int availableCapacity = snapshot.getAvailableExecutors() +
                         snapshot.getConnectingExecutors() +
-                        strategyState.getAdditionalPlannedCapacity() + 
+                        strategyState.getAdditionalPlannedCapacity() +
                         ((NomadCloud)nomadCloud).getPending();
 
                 int currentDemand = snapshot.getQueueLength();

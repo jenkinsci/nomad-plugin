@@ -3,16 +3,9 @@ package org.jenkinsci.plugins.nomad;
 import hudson.Extension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import hudson.Util;
 import hudson.model.Describable;
 import hudson.model.Descriptor;
 import jenkins.model.Jenkins;
-
-import javax.annotation.Nullable;
-import java.util.*;
-import java.util.logging.Logger;
-
-import org.json.JSONObject;
 
 public class NomadConstraintTemplate implements Describable<NomadConstraintTemplate> {
 
@@ -57,7 +50,7 @@ public class NomadConstraintTemplate implements Describable<NomadConstraintTempl
     public Descriptor<NomadConstraintTemplate> getDescriptor() {
         return Jenkins.getInstance().getDescriptor(getClass());
     }
-	
+
 	public String getLtarget() {
 		return ltarget;
 	}

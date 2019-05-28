@@ -8,7 +8,7 @@
 
   <f:entry title="Nomad URL" field="nomadUrl" description="Nomad API URL [hostname:port]">
     <f:textbox default="http://127.0.0.1:4646"/>
-  </f:entry>
+  </f:entry>j
 
   <f:entry title="Jenkins Base URL" field="jenkinsUrl" description="Jenkins base URL">
     <f:textbox default="${instance.getJenkinsUrl()}"/>
@@ -16,6 +16,10 @@
 
   <f:entry title="Jenkins Tunnel" field="jenkinsTunnel" description="Jenkins Tunnel [HOST:PORT] Connect to the specified host and port, instead of connecting directly to Jenkins. Useful when connection to Hudson needs to be tunneled.">
     <f:textbox default="${instance.getJenkinsTunnel()}"/>
+  </f:entry>
+
+  <f:entry title="Worker Startup Timeout" field="workerTimeout" description="Worker Startup timeout in minutes">
+    <f:textbox default="1"/>
   </f:entry>
 
   <f:entry title="Jenkins Slave URL" field="slaveUrl" description="Jenkins slave URL">

@@ -31,6 +31,7 @@ public class NomadApiTest {
             "jenkinsUrl",
             "jenkinsTunnel",
             "slaveUrl",
+            "1",
             Collections.singletonList(slaveTemplate));
 
     @Before
