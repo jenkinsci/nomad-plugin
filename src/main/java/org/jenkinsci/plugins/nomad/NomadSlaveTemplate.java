@@ -130,7 +130,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     @Override
     @SuppressWarnings("unchecked")
     public Descriptor<NomadSlaveTemplate> getDescriptor() {
-        return Jenkins.getInstance().getDescriptor(getClass());
+        return Jenkins.get().getDescriptor(getClass());
     }
 
     public String createSlaveName() {
@@ -219,6 +219,14 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public String getDriver() {
         return driver;
+    }
+
+    public Boolean isDockerDriver(){
+        return getDriver().equals("docker");
+    }
+
+    public Boolean isJavaDriver(){
+        return getDriver().equals("java");
     }
 
     public Boolean getPrivileged() {

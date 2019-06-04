@@ -32,7 +32,7 @@ public class NomadProvisioningStrategy extends NodeProvisioner.Strategy {
     public NodeProvisioner.StrategyDecision apply(@Nonnull NodeProvisioner.StrategyState strategyState) {
         final Label label = strategyState.getLabel();
         LoadStatisticsSnapshot snapshot = strategyState.getSnapshot();
-        for ( Cloud nomadCloud : Jenkins.getActiveInstance().clouds ){
+        for ( Cloud nomadCloud : Jenkins.get().clouds ){
             if ( nomadCloud instanceof NomadCloud ) {
 
                 LOGGER.log(Level.FINE, "Available executors={0} connecting executors={1} AdditionalPlannedCapacity={2} pending ={3}",

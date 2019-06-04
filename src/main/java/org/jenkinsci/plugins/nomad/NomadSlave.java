@@ -45,7 +45,7 @@ public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
             template.getNumExecutors(),
             template.getMode(),
             labelString,
-            new JNLPLauncher(),
+            new JNLPLauncher(false),
             retentionStrategy,
             nodeProperties
         );
@@ -100,11 +100,11 @@ public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
     @Override
     protected void _terminate(TaskListener listener)  {
         LOGGER.log(Level.INFO, "Asking Nomad to deregister slave '" + getNodeName() + "'");
-        getCloud().Nomad().stopSlave(getNodeName());
+        getCloud().Nomad().stopSlave(getNodeName(), getCloud().getNomadACL());
     }
 
     public NomadCloud getCloud() {
-        return (NomadCloud) Jenkins.getInstance().getCloud(cloudName);
+        return (NomadCloud) Jenkins.get().getCloud(cloudName);
     }
 
     public String getCloudName() {

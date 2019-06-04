@@ -9,13 +9,14 @@ import hudson.slaves.AbstractCloudImpl;
 import hudson.slaves.Cloud;
 import hudson.slaves.NodeProvisioner;
 import hudson.util.FormValidation;
+import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-import org.kohsuke.stapler.interceptor.RequirePOST;
+import org.kohsuke.stapler.verb.POST;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -28,6 +29,7 @@ public class NomadCloud extends AbstractCloudImpl {
     private final List<? extends NomadSlaveTemplate> templates;
 
     private final String nomadUrl;
+    private Secret nomadACL;
     private String jenkinsUrl;
     private String jenkinsTunnel;
     private String slaveUrl;
@@ -45,11 +47,14 @@ public class NomadCloud extends AbstractCloudImpl {
             String jenkinsTunnel,
             String slaveUrl,
             String workerTimeout,
+            String nomadACL,
             List<? extends NomadSlaveTemplate> templates)
     {
         super(name, null);
 
+        this.nomadACL = Secret.fromString(nomadACL);
         this.nomadUrl = nomadUrl;
+
         this.jenkinsUrl = jenkinsUrl;
         this.jenkinsTunnel = jenkinsTunnel;
         this.slaveUrl = slaveUrl;
@@ -71,7 +76,7 @@ public class NomadCloud extends AbstractCloudImpl {
         nomad = new NomadApi(nomadUrl);
 
         if (jenkinsUrl.equals("")) {
-            jenkinsUrl = Jenkins.getInstance().getRootUrl();
+            jenkinsUrl = Jenkins.get().getRootUrl();
         }
 
         if (jenkinsTunnel.equals("")) {
@@ -137,16 +142,16 @@ public class NomadCloud extends AbstractCloudImpl {
                     new NomadRetentionStrategy(template.getIdleTerminationInMinutes()),
                     Collections.emptyList()
             );
-            Jenkins.getInstance().addNode(slave);
+            Jenkins.get().addNode(slave);
 
             // Support for Jenkins security
             String jnlpSecret = "";
-            if (Jenkins.getInstance().isUseSecurity()) {
+            if (Jenkins.get().isUseSecurity()) {
                 jnlpSecret = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(slaveName);
             }
 
             LOGGER.log(Level.INFO, "Asking Nomad to schedule new Jenkins slave");
-            nomad.startSlave(slaveName, jnlpSecret, template);
+            nomad.startSlave(slaveName, nomadACL.getPlainText(), jnlpSecret, template);
 
             // Check scheduling success
             Callable<Boolean> callableTask = () -> {
@@ -210,9 +215,9 @@ public class NomadCloud extends AbstractCloudImpl {
             return "Nomad";
         }
 
-        @RequirePOST
+        @POST
         public FormValidation doTestConnection(@QueryParameter("nomadUrl") String nomadUrl) {
-            Objects.requireNonNull(Jenkins.getInstance()).checkPermission(Jenkins.ADMINISTER);
+            Objects.requireNonNull(Jenkins.get()).checkPermission(Jenkins.ADMINISTER);
             try {
                 Request request = new Request.Builder()
                         .url(nomadUrl + "/v1/agent/self")
@@ -227,9 +232,9 @@ public class NomadCloud extends AbstractCloudImpl {
             }
         }
 
-        @RequirePOST
+        @POST
         public FormValidation doCheckName(@QueryParameter String name) {
-            Objects.requireNonNull(Jenkins.getInstance()).checkPermission(Jenkins.ADMINISTER);
+            Objects.requireNonNull(Jenkins.get()).checkPermission(Jenkins.ADMINISTER);
             if (Strings.isNullOrEmpty(name)) {
                 return FormValidation.error("Name must be set");
             } else {
@@ -259,6 +264,13 @@ public class NomadCloud extends AbstractCloudImpl {
         return workerTimeout;
     }
 
+    public String getNomadACL() {
+        if (nomadACL != null)
+            return this.nomadACL.getPlainText();
+        else
+            return null;
+    }
+
     public void setJenkinsUrl(String jenkinsUrl) {
         this.jenkinsUrl = jenkinsUrl;
     }
@@ -277,6 +289,10 @@ public class NomadCloud extends AbstractCloudImpl {
 
     public void setNomad(NomadApi nomad) {
         this.nomad = nomad;
+    }
+
+    public void setNomadACL(String token) {
+        this.nomadACL = Secret.fromString(token);
     }
 
     public int getPending() {

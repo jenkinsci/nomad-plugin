@@ -22,6 +22,10 @@
     <f:textbox default="1"/>
   </f:entry>
 
+  <f:entry title="Nomad ACL" field="nomadACL" description="Valid Nomad ACL Token">
+    <f:password />
+  </f:entry>
+
   <f:entry title="Jenkins Slave URL" field="slaveUrl" description="Jenkins slave URL">
     <f:textbox default="${instance.getSlaveUrl()}"/>
   </f:entry>

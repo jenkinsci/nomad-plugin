@@ -28,11 +28,11 @@ public final class NomadApi {
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-    public NomadApi(String nomadApi) {
+    NomadApi(String nomadApi) {
         this.nomadApi = nomadApi;
     }
 
-    public void startSlave(String slaveName, String jnlpSecret, NomadSlaveTemplate template) {
+    void startSlave(String slaveName, String nomadToken, String jnlpSecret, NomadSlaveTemplate template) {
 
         String slaveJob = buildSlaveJob(
             slaveName,
@@ -44,10 +44,14 @@ public final class NomadApi {
 
         try {
             RequestBody body = RequestBody.create(JSON, slaveJob);
-            Request request = new Request.Builder()
-                    .url(this.nomadApi + "/v1/job/" + slaveName + "?region=" + template.getRegion())
-                    .put(body)
-                    .build();
+            Request.Builder builder = new Request.Builder()
+                    .url(this.nomadApi + "/v1/job/" + slaveName + "?region=" + template.getRegion());
+
+            if (StringUtils.isNotEmpty(nomadToken))
+                builder = builder.header("X-Nomad-Token", nomadToken);
+
+            Request request = builder.put(body)
+                .build();
 
             client.newCall(request).execute().body().close();
         } catch (IOException e) {
@@ -55,12 +59,15 @@ public final class NomadApi {
         }
     }
 
+    void stopSlave(String slaveName, String nomadToken) {
 
-    public void stopSlave(String slaveName) {
+        Request.Builder builder = new Request.Builder()
+                .url(this.nomadApi + "/v1/job/" + slaveName);
 
-        Request request = new Request.Builder()
-                .url(this.nomadApi + "/v1/job/" + slaveName)
-                .delete()
+        if (StringUtils.isNotEmpty(nomadToken))
+            builder = builder.addHeader("X-Nomad-Token", nomadToken);
+
+        Request request = builder.delete()
                 .build();
 
         try {
@@ -85,35 +92,45 @@ public final class NomadApi {
             driverConfig.put("auth", credentials);
         }
 
-        // java -cp /local/slave.jar hudson.remoting.jnlp.Main --help
         ArrayList<String> args = new ArrayList<>();
-        args.add("-headless");
 
-        if (!template.getCloud().getJenkinsUrl().isEmpty()) {
-            args.add("-url");
-            args.add(template.getCloud().getJenkinsUrl());
-        }
+        if (template.isJavaDriver()) {
+            args.add("-jnlpUrl");
 
-        if (!template.getCloud().getJenkinsTunnel().isEmpty()) {
-            args.add("-tunnel");
-            args.add(template.getCloud().getJenkinsTunnel());
-        }
+            args.add(Util.ensureEndsWith(template.getCloud().getJenkinsUrl(), "/") + "computer/" + name + "/slave-agent.jnlp");
 
-        if (!template.getRemoteFs().isEmpty()) {
-            args.add("-workDir");
-            args.add(Util.ensureEndsWith(template.getRemoteFs(), "/"));
-        }
+            // java -cp /local/slave.jar [options...] <secret key> <agent name>
+            if (!secret.isEmpty()) {
+                args.add("-secret");
+                args.add(secret);
+            }
 
-        // java -cp /local/slave.jar [options...] <secret key> <agent name>
-        if (!secret.isEmpty()) {
-            args.add(secret);
-        }
-        args.add(name);
-
-        if (template.getDriver().equals("java")) {
             driverConfig.put("jar_path", "/local/slave.jar");
             driverConfig.put("args", args);
-        } else if (template.getDriver().equals("docker")) {
+        } else if (template.isDockerDriver()) {
+            args.add("-headless");
+
+            if (!template.getCloud().getJenkinsUrl().isEmpty()) {
+                args.add("-url");
+                args.add(template.getCloud().getJenkinsUrl());
+            }
+
+            if (!template.getCloud().getJenkinsTunnel().isEmpty()) {
+                args.add("-tunnel");
+                args.add(template.getCloud().getJenkinsTunnel());
+            }
+
+            if (!template.getRemoteFs().isEmpty()) {
+                args.add("-workDir");
+                args.add(Util.ensureEndsWith(template.getRemoteFs(), "/"));
+            }
+
+            // java -cp /local/slave.jar [options...] <secret key> <agent name>
+            if (!secret.isEmpty()) {
+                args.add(secret);
+            }
+            args.add(name);
+
             String prefixCmd = template.getPrefixCmd();
             // If an addtional command is defined - prepend it to jenkins slave invocation
             if (!prefixCmd.isEmpty())

@@ -48,7 +48,7 @@ public class NomadConstraintTemplate implements Describable<NomadConstraintTempl
 	@Override
     @SuppressWarnings("unchecked")
     public Descriptor<NomadConstraintTemplate> getDescriptor() {
-        return Jenkins.getInstance().getDescriptor(getClass());
+        return Jenkins.get().getDescriptor(getClass());
     }
 
 	public String getLtarget() {
