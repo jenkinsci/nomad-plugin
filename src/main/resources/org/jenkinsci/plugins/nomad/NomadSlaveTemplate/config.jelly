@@ -4,6 +4,10 @@
 
     <table width="100%">
 
+        <f:entry title="Job Prefix" field="prefix">
+            <f:textbox default="jenkins"/>
+        </f:entry>
+
         <f:entry title="Cpu" field="cpu">
             <f:textbox/>
         </f:entry>

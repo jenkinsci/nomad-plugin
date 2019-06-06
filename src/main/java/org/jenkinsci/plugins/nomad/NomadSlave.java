@@ -23,8 +23,6 @@ public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
 
     private final Boolean reusable;
 
-    private NomadSlaveTemplate template;
-
     private static final String NODE_DESCRIPTION = "Nomad Jenkins Slave";
 
     private final String cloudName;
