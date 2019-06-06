@@ -1,22 +1,16 @@
 package org.jenkinsci.plugins.nomad;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import hudson.Util;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import org.jenkinsci.plugins.nomad.Api.Job;
+import okhttp3.*;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.nomad.Api.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.List;
 
 public final class NomadApi {
 
@@ -40,7 +34,7 @@ public final class NomadApi {
             template
         );
 
-        LOGGER.log(Level.INFO, slaveJob);
+        LOGGER.log(Level.FINE, slaveJob);
 
         try {
             RequestBody body = RequestBody.create(JSON, slaveJob);
@@ -76,6 +70,36 @@ public final class NomadApi {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
 
+    }
+
+    JobInfo[] getRunningWorkers(String prefix, String nomadToken) {
+
+        JobInfo[] nomadJobs = null;
+
+        Request.Builder builder = new Request.Builder()
+                .url(this.nomadApi + "/v1/jobs?prefix=" + prefix)
+                .get();
+
+        if (StringUtils.isNotEmpty(nomadToken))
+            builder = builder.addHeader("X-Nomad-Token", nomadToken);
+
+        Request request = builder.build();
+
+        try {
+            ResponseBody body = client.newCall(request).execute().body();
+
+            if (body != null) {
+                Gson gson = new Gson();
+
+                nomadJobs = gson.fromJson(body.string(), JobInfo[].class);
+
+                body.close();
+            }
+        } catch (IOException e){
+            LOGGER.log(Level.SEVERE, "Failed to retrieve running jobs", e);
+        }
+
+        return nomadJobs;
     }
 
     private Map<String,Object> buildDriverConfig(String name, String secret, NomadSlaveTemplate template) {

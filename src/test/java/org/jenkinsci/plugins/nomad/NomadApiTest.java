@@ -18,7 +18,7 @@ public class NomadApiTest {
     private NomadApi nomadApi = new NomadApi("http://localhost");
     private List<NomadConstraintTemplate> constraintTest = new ArrayList<NomadConstraintTemplate>();
     private NomadSlaveTemplate slaveTemplate = new NomadSlaveTemplate(
-            "300", "256", "100",
+            "test", "300", "256", "100",
             null, constraintTest, "remoteFs", "3", true, "1", Node.Mode.NORMAL,
             "ams", "0", "image", "dc01", "", "", false, "bridge",
             "", true, "/mnt:/mnt", "jenkins", new ArrayList<NomadPortTemplate>() {
@@ -33,6 +33,7 @@ public class NomadApiTest {
             "slaveUrl",
             "1",
             "",
+            false,
             Collections.singletonList(slaveTemplate));
 
     @Before

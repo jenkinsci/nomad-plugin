@@ -14,6 +14,7 @@ import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import org.jenkinsci.plugins.nomad.Api.JobInfo;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
@@ -35,6 +36,8 @@ public class NomadCloud extends AbstractCloudImpl {
     private String slaveUrl;
     private int workerTimeout = 1;
 
+    private final Boolean prune;
+
     private NomadApi nomad;
 
     private int pending = 0;
@@ -48,6 +51,7 @@ public class NomadCloud extends AbstractCloudImpl {
             String slaveUrl,
             String workerTimeout,
             String nomadACL,
+            Boolean prune,
             List<? extends NomadSlaveTemplate> templates)
     {
         super(name, null);
@@ -59,6 +63,7 @@ public class NomadCloud extends AbstractCloudImpl {
         this.jenkinsTunnel = jenkinsTunnel;
         this.slaveUrl = slaveUrl;
         setWorkerTimeout(workerTimeout);
+        this.prune = prune;
 
         if (templates == null) {
             this.templates = Collections.emptyList();
@@ -97,9 +102,11 @@ public class NomadCloud extends AbstractCloudImpl {
         final NomadSlaveTemplate template = getTemplate(label);
 
         if (template != null) {
+            if (getPrune())
+                pruneOrphanedWorkers(template);
+
             try {
                 while (excessWorkload > 0) {
-
                     LOGGER.log(Level.INFO, "Excess workload of " + excessWorkload + ", provisioning new Jenkins slave on Nomad cluster");
 
                     final String slaveName = template.createSlaveName();
@@ -120,6 +127,22 @@ public class NomadCloud extends AbstractCloudImpl {
         return Collections.emptyList();
     }
 
+    private void pruneOrphanedWorkers(NomadSlaveTemplate template) {
+        JobInfo[] nomadWorkers = this.nomad.getRunningWorkers(template.getPrefix(), getNomadACL());
+
+        for (JobInfo worker : nomadWorkers) {
+            if (worker.getStatus().equalsIgnoreCase("running")) {
+                LOGGER.log(Level.FINE, "Found worker: " + worker.getName() + " - " + worker.getID());
+                Node node = Jenkins.get().getNode(worker.getName());
+
+                if (node == null) {
+                    LOGGER.log(Level.FINE, "Found Orphaned Node: " + worker.getID());
+                    this.nomad.stopSlave(worker.getID(), getNomadACL());
+                }
+            }
+        }
+
+    }
 
     private class ProvisioningCallback implements Callable<Node> {
 
@@ -277,6 +300,13 @@ public class NomadCloud extends AbstractCloudImpl {
 
     public void setSlaveUrl(String slaveUrl) {
         this.slaveUrl = slaveUrl;
+    }
+
+    public Boolean getPrune() {
+        if (prune == null)
+            return false;
+
+        return prune;
     }
 
     public void setWorkerTimeout(String workerTimeout) {

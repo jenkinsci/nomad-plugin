@@ -6,6 +6,10 @@
     <f:textbox checkMethod="post" />
   </f:entry>
 
+  <f:entry title="Prune Orphaned Workers" field="prune">
+    <f:checkbox default="false" value="${instance.getPrune()}" />
+  </f:entry>
+
   <f:entry title="Nomad URL" field="nomadUrl" description="Nomad API URL [hostname:port]">
     <f:textbox default="http://127.0.0.1:4646"/>
   </f:entry>j

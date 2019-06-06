@@ -8,6 +8,7 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.*;
@@ -15,13 +16,14 @@ import java.util.logging.Logger;
 
 public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
-    private static final String SLAVE_PREFIX = "jenkins-";
+    private static final String SLAVE_PREFIX = "jenkins";
     private static final Logger LOGGER = Logger.getLogger(NomadSlaveTemplate.class.getName());
 
     private final int idleTerminationInMinutes;
     private final Boolean reusable;
     private final int numExecutors;
 
+    private final String prefix;
     private final int cpu;
     private final int memory;
     private final int disk;
@@ -49,6 +51,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     @DataBoundConstructor
     public NomadSlaveTemplate(
+            String prefix,
             String cpu,
             String memory,
             String disk,
@@ -73,6 +76,11 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             String switchUser,
             List<? extends NomadPortTemplate> ports
     ) {
+        if (StringUtils.isNotEmpty(prefix))
+            this.prefix = prefix;
+        else
+            this.prefix = SLAVE_PREFIX;
+
         this.cpu = Integer.parseInt(cpu);
         this.memory = Integer.parseInt(memory);
         this.disk = Integer.parseInt(disk);
@@ -134,7 +142,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     }
 
     public String createSlaveName() {
-        return SLAVE_PREFIX + Long.toHexString(System.nanoTime());
+        return getPrefix() + "-" + Long.toHexString(System.nanoTime());
     }
 
     public Set<LabelAtom> getLabelSet() {
@@ -147,6 +155,12 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public Node.Mode getMode() {
         return mode;
+    }
+
+    public String getPrefix() {
+        if(StringUtils.isNotEmpty(prefix))
+            return prefix;
+        return SLAVE_PREFIX;
     }
 
     public int getCpu() {

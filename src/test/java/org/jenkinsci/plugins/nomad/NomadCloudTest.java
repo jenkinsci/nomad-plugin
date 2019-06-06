@@ -23,6 +23,7 @@ public class NomadCloudTest {
             "slaveUrl",
             "1",
             "",
+            false,
             Collections.singletonList(slaveTemplate));
 
     @Before
