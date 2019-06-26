@@ -84,10 +84,6 @@ public class NomadCloud extends AbstractCloudImpl {
             jenkinsUrl = Jenkins.get().getRootUrl();
         }
 
-        if (jenkinsTunnel.equals("")) {
-            jenkinsTunnel = jenkinsUrl;
-        }
-
         if (slaveUrl.equals("")) {
             slaveUrl = jenkinsUrl + "jnlpJars/slave.jar";
         }
