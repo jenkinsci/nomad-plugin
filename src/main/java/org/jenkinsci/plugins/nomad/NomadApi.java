@@ -194,6 +194,11 @@ public final class NomadApi {
             if (!capAdd.isEmpty()) {
                 driverConfig.put("cap_add", StringUtils.split(capAdd, ", "));
             }
+
+            String capDrop = template.getCapDrop();
+            if (!capDrop.isEmpty()) {
+                driverConfig.put("cap_drop", StringUtils.split(capDrop, ", "));
+            }
         }
 
         return driverConfig;
