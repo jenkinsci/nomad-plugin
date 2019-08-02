@@ -26,11 +26,12 @@ public final class NomadApi {
         this.nomadApi = nomadApi;
     }
 
-    void startSlave(String slaveName, String nomadToken, String jnlpSecret, NomadSlaveTemplate template) {
+    void startSlave(NomadCloud cloud, String slaveName, String nomadToken, String jnlpSecret, NomadSlaveTemplate template) {
 
         String slaveJob = buildSlaveJob(
             slaveName,
             jnlpSecret,
+            cloud,
             template
         );
 
@@ -102,7 +103,7 @@ public final class NomadApi {
         return nomadJobs;
     }
 
-    private Map<String,Object> buildDriverConfig(String name, String secret, NomadSlaveTemplate template) {
+    private Map<String,Object> buildDriverConfig(String name, String secret, NomadCloud cloud, NomadSlaveTemplate template) {
         Map<String,Object> driverConfig = new HashMap<>();
 
         if (template.getUsername() != null && !template.getUsername().isEmpty()) {
@@ -121,7 +122,7 @@ public final class NomadApi {
         if (template.isJavaDriver()) {
             args.add("-jnlpUrl");
 
-            args.add(Util.ensureEndsWith(template.getCloud().getJenkinsUrl(), "/") + "computer/" + name + "/slave-agent.jnlp");
+            args.add(Util.ensureEndsWith(cloud.getJenkinsUrl(), "/") + "computer/" + name + "/slave-agent.jnlp");
 
             // java -cp /local/slave.jar [options...] <secret key> <agent name>
             if (!secret.isEmpty()) {
@@ -134,14 +135,14 @@ public final class NomadApi {
         } else if (template.isDockerDriver()) {
             args.add("-headless");
 
-            if (!template.getCloud().getJenkinsUrl().isEmpty()) {
+            if (!cloud.getJenkinsUrl().isEmpty()) {
                 args.add("-url");
-                args.add(template.getCloud().getJenkinsUrl());
+                args.add(cloud.getJenkinsUrl());
             }
 
-            if (!template.getCloud().getJenkinsTunnel().isEmpty()) {
+            if (!cloud.getJenkinsTunnel().isEmpty()) {
                 args.add("-tunnel");
-                args.add(template.getCloud().getJenkinsTunnel());
+                args.add(cloud.getJenkinsTunnel());
             }
 
             if (!template.getRemoteFs().isEmpty()) {
@@ -207,6 +208,7 @@ public final class NomadApi {
     String buildSlaveJob(
             String name,
             String secret,
+            NomadCloud cloud,
             NomadSlaveTemplate template
     ) {
         PortGroup portGroup = new PortGroup(template.getPorts());
@@ -219,7 +221,7 @@ public final class NomadApi {
                 "jenkins-slave",
                 template.getDriver(),
                 template.getSwitchUser(),
-                buildDriverConfig(name, secret, template),
+                buildDriverConfig(name, secret, cloud, template),
                 new Resource(
                     template.getCpu(),
                     template.getMemory(),
@@ -227,7 +229,7 @@ public final class NomadApi {
                 ),
                 new LogConfig(1, 10),
                 new Artifact[]{
-                    new Artifact(template.getCloud().getSlaveUrl(), null, "/local/")
+                    new Artifact(cloud.getSlaveUrl(), null, "/local/")
                 }
         );
 

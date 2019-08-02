@@ -36,14 +36,9 @@ public class NomadApiTest {
             false,
             Collections.singletonList(slaveTemplate));
 
-    @Before
-    public void setup() {
-        slaveTemplate.setCloud(nomadCloud);
-    }
-
     @Test
     public void testStartSlave() {
-        String job = nomadApi.buildSlaveJob("slave-1", "secret", slaveTemplate);
+        String job = nomadApi.buildSlaveJob("slave-1", "secret", nomadCloud, slaveTemplate);
 
         assertTrue(job.contains("\"Region\":\"ams\""));
         assertTrue(job.contains("\"CPU\":300"));

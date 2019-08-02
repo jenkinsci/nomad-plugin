@@ -48,7 +48,6 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final String capDrop;
 
 
-    private NomadCloud cloud;
     private String driver;
     private String datacenters;
     private Set<LabelAtom> labelSet;
@@ -211,14 +210,6 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public int getDisk() {
         return disk;
-    }
-
-    public void setCloud(NomadCloud cloud) {
-        this.cloud = cloud;
-    }
-
-    public NomadCloud getCloud() {
-        return cloud;
     }
 
     public String getRemoteFs() {

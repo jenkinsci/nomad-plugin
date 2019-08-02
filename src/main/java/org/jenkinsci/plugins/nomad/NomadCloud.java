@@ -88,9 +88,6 @@ public class NomadCloud extends AbstractCloudImpl {
     }
 
     private Object readResolve() {
-        for (NomadSlaveTemplate template : this.templates) {
-            template.setCloud(this);
-        }
         nomad = new NomadApi(nomadUrl);
 
         if (jenkinsUrl.equals("")) {
@@ -183,7 +180,7 @@ public class NomadCloud extends AbstractCloudImpl {
             }
 
             LOGGER.log(Level.INFO, "Asking Nomad to schedule new Jenkins slave");
-            nomad.startSlave(slaveName, getNomadACL(), jnlpSecret, template);
+            nomad.startSlave(cloud, slaveName, getNomadACL(), jnlpSecret, template);
 
             // Check scheduling success
             Callable<Boolean> callableTask = () -> {
