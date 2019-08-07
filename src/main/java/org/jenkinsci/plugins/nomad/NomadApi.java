@@ -132,6 +132,21 @@ public final class NomadApi {
 
             driverConfig.put("jar_path", "/local/slave.jar");
             driverConfig.put("args", args);
+        } else if (template.isRawExecDriver()) {
+            args.add("-jar");
+            args.add("./local/slave.jar");
+
+            args.add("-jnlpUrl");
+            args.add(Util.ensureEndsWith(cloud.getJenkinsUrl(), "/") + "computer/" + name + "/slave-agent.jnlp");
+
+            // java -cp /local/slave.jar [options...] <secret key> <agent name>
+            if (!secret.isEmpty()) {
+                args.add("-secret");
+                args.add(secret);
+            }
+
+            driverConfig.put("command", "java");
+            driverConfig.put("args", args);
         } else if (template.isDockerDriver()) {
             args.add("-headless");
 

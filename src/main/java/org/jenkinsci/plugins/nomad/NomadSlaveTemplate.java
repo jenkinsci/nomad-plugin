@@ -32,6 +32,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final List<? extends NomadConstraintTemplate> constraints;
     private final String region;
     private final String remoteFs;
+    private final Boolean useRawExec;
     private final String image;
     private final Boolean privileged;
     private final String network;
@@ -61,6 +62,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             String labels,
             List<? extends NomadConstraintTemplate> constraints,
             String remoteFs,
+            Boolean useRawExec,
             String idleTerminationInMinutes,
             Boolean reusable,
             String numExecutors,
@@ -96,6 +98,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.numExecutors = Integer.parseInt(numExecutors);
         this.mode = mode;
         this.remoteFs = remoteFs;
+        this.useRawExec = useRawExec;
         this.labels = Util.fixNull(labels);
         if (constraints == null) {
             this.constraints = Collections.emptyList();
@@ -111,9 +114,9 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.privileged = privileged;
         this.network = network;
         this.prefixCmd = prefixCmd;
+        this.switchUser = switchUser;
         this.forcePull = forcePull;
         this.hostVolumes = hostVolumes;
-        this.switchUser = switchUser;
         if (ports == null) {
             this.ports = Collections.emptyList();
         } else {
@@ -127,6 +130,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     protected Object readResolve() {
         this.driver = !this.image.equals("") ? "docker" : "java";
+        if (this.useRawExec) this.driver = "raw_exec";
         return this;
     }
 
@@ -216,6 +220,10 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return remoteFs;
     }
 
+    public Boolean useRawExec() {
+        return useRawExec;
+    }
+
     public String getImage() {
         return image;
     }
@@ -232,6 +240,10 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return prefixCmd;
     }
 
+    public String getSwitchUser() {
+        return switchUser;
+    }
+
     public String getDriver() {
         return driver;
     }
@@ -242,6 +254,10 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public Boolean isJavaDriver(){
         return getDriver().equals("java");
+    }
+
+    public Boolean isRawExecDriver(){
+        return getDriver().equals("raw_exec");
     }
 
     public Boolean getPrivileged() {
@@ -258,10 +274,6 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public String getHostVolumes() {
         return hostVolumes;
-    }
-
-    public String getSwitchUser() {
-        return switchUser;
     }
 
     public List<? extends NomadPortTemplate> getPorts() {

@@ -38,6 +38,10 @@
             <f:textbox default="dc1"/>
         </f:entry>
 
+        <f:entry title="Switch User" field="switchUser">
+            <f:textbox name="switchUser" default="" />
+        </f:entry>
+
         <f:entry title="Priority" field="priority">
             <f:textbox/>
         </f:entry>
@@ -58,6 +62,10 @@
 
         <f:entry title="Workspace root" field="remoteFs">
             <f:textbox/>
+        </f:entry>
+
+        <f:entry title="Disable filesystem isolation (use raw_exec driver)" field="useRawExec">
+            <f:checkbox name="useRawExec" field="useRawExec" default="false" value="${instance.useRawExec}" />
         </f:entry>
 
         <f:optionalBlock name="docker" title="Use Docker driver" inline="true" checked="${!instance.image.isEmpty()}">
@@ -84,9 +92,6 @@
             </f:entry>
             <f:entry title="Prefix Command" field="preCmd">
                 <f:textbox name="prefixCmd" field="prefixCmd"/>
-            </f:entry>
-            <f:entry title="Switch User" field="switchUser">
-                <f:textbox name="switchUser" field="switchUser" default="" />
             </f:entry>
             <f:entry title="Extra Hosts" field="extraHosts">
                 <f:textbox name="extraHosts" field="extraHosts" default="" />
