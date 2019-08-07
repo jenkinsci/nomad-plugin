@@ -64,7 +64,7 @@
             <f:textbox/>
         </f:entry>
 
-        <f:entry title="Disable filesystem isolation (use raw_exec driver)" field="useRawExec">
+        <f:entry title="Use raw_exec driver" field="useRawExec">
             <f:checkbox name="useRawExec" field="useRawExec" default="false" value="${instance.useRawExec}" />
         </f:entry>
 
