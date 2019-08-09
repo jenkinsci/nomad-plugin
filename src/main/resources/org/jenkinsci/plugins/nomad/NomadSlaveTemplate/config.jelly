@@ -94,7 +94,7 @@
             <f:entry title="Add Capabilities" field="capAdd">
                 <f:textbox name="capAdd" field="capAdd" default="" />
             </f:entry>
-            <f:entry title="Add Capabilities" field="capDrop">
+            <f:entry title="Drop Capabilities" field="capDrop">
                 <f:textbox name="capDrop" field="capDrop" default="" />
             </f:entry>
         </f:optionalBlock>
