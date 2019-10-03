@@ -150,17 +150,18 @@ public final class NomadApi {
         } else if (template.isDockerDriver()) {
             args.add("-headless");
 
-            if (!cloud.getJenkinsUrl().isEmpty()) {
+            if (StringUtils.isNotEmpty(cloud.getJenkinsUrl())) {
                 args.add("-url");
                 args.add(cloud.getJenkinsUrl());
             }
 
-            if (!cloud.getJenkinsTunnel().isEmpty()) {
+            String jenkinsTunnel = cloud.getJenkinsTunnel();
+            if (StringUtils.isNotEmpty(jenkinsTunnel)) {
                 args.add("-tunnel");
-                args.add(cloud.getJenkinsTunnel());
+                args.add(jenkinsTunnel);
             }
 
-            if (!template.getRemoteFs().isEmpty()) {
+            if (StringUtils.isNotEmpty(template.getRemoteFs())) {
                 args.add("-workDir");
                 args.add(Util.ensureEndsWith(template.getRemoteFs(), "/"));
             }
@@ -197,12 +198,12 @@ public final class NomadApi {
             }
 
             String hostDevices = template.getHostDevices();
-            if (hostDevices != null && !hostDevices.isEmpty()) {
+            if (StringUtils.isNotEmpty(hostDevices)) {
                 driverConfig.put("devices", parseDeviceMappings(StringUtils.split(hostDevices, ",")));
             }
 
             String shmSize = template.getSharedMemory();
-            if (shmSize != null && !shmSize.isEmpty()) {
+            if (StringUtils.isNotEmpty(shmSize)) {
                 // if not defined, keep it unspecified for default value
                 driverConfig.put("shm_size", Double.parseDouble(shmSize));
             }
@@ -213,7 +214,7 @@ public final class NomadApi {
             driverConfig.put("network_mode", template.getNetwork());
 
             String extraHosts = template.getExtraHosts();
-            if (extraHosts != null && !extraHosts.isEmpty()) {
+            if (StringUtils.isNotEmpty(extraHosts)) {
                 driverConfig.put("extra_hosts", StringUtils.split(extraHosts, ", "));
             }
 

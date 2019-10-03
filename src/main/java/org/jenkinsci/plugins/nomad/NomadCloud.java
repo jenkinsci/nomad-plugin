@@ -365,10 +365,6 @@ public class NomadCloud extends AbstractCloudImpl {
         return jenkinsTunnel;
     }
 
-    public void setJenkinsTunnel(String jenkinsTunnel) {
-        this.jenkinsTunnel = jenkinsTunnel;
-    }
-
     public List<NomadSlaveTemplate> getTemplates() {
         return Collections.unmodifiableList(templates);
     }

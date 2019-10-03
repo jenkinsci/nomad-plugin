@@ -102,7 +102,11 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.numExecutors = Integer.parseInt(numExecutors);
         this.mode = mode;
         this.remoteFs = remoteFs;
-        this.useRawExec = useRawExec;
+        if (useRawExec != null) {
+            this.useRawExec = useRawExec;
+        } else {
+            this.useRawExec = false;
+        }
         this.labels = Util.fixNull(labels);
         if (constraints == null) {
             this.constraints = Collections.emptyList();
@@ -118,12 +122,15 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.privileged = privileged;
         this.network = network;
         this.prefixCmd = prefixCmd;
-        this.switchUser = switchUser;
+        if (switchUser == null) {
+            this.switchUser = "";
+        } else {
+            this.switchUser = switchUser;
+        }
         this.forcePull = forcePull;
         this.sharedMem = sharedMemory;
         this.hostVolumes = hostVolumes;
         this.hostDevices = hostDevices;
-//        this.switchUser = switchUser;
         if (ports == null) {
             this.ports = Collections.emptyList();
         } else {
