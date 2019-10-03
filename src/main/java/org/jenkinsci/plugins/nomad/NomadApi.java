@@ -1,23 +1,16 @@
 package org.jenkinsci.plugins.nomad;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.google.gson.*;
 import hudson.Util;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import org.jenkinsci.plugins.nomad.Api.Job;
+import okhttp3.*;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.nomad.Api.*;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.List;
 
 public final class NomadApi {
 
@@ -29,26 +22,31 @@ public final class NomadApi {
 
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
-    public NomadApi(String nomadApi) {
+    NomadApi(String nomadApi) {
         this.nomadApi = nomadApi;
     }
 
-    public void startSlave(String slaveName, String jnlpSecret, NomadSlaveTemplate template) {
+    void startSlave(NomadCloud cloud, String slaveName, String nomadToken, String jnlpSecret, NomadSlaveTemplate template) {
 
         String slaveJob = buildSlaveJob(
             slaveName,
             jnlpSecret,
+            cloud,
             template
         );
 
-        LOGGER.log(Level.INFO, slaveJob);
+        LOGGER.log(Level.FINE, slaveJob);
 
         try {
             RequestBody body = RequestBody.create(JSON, slaveJob);
-            Request request = new Request.Builder()
-                    .url(this.nomadApi + "/v1/job/" + slaveName + "?region=" + template.getRegion())
-                    .put(body)
-                    .build();
+            Request.Builder builder = new Request.Builder()
+                    .url(this.nomadApi + "/v1/job/" + slaveName + "?region=" + template.getRegion());
+
+            if (StringUtils.isNotEmpty(nomadToken))
+                builder = builder.header("X-Nomad-Token", nomadToken);
+
+            Request request = builder.put(body)
+                .build();
 
             client.newCall(request).execute().body().close();
         } catch (IOException e) {
@@ -56,12 +54,15 @@ public final class NomadApi {
         }
     }
 
+    void stopSlave(String slaveName, String nomadToken) {
 
-    public void stopSlave(String slaveName) {
+        Request.Builder builder = new Request.Builder()
+                .url(this.nomadApi + "/v1/job/" + slaveName);
 
-        Request request = new Request.Builder()
-                .url(this.nomadApi + "/v1/job/" + slaveName)
-                .delete()
+        if (StringUtils.isNotEmpty(nomadToken))
+            builder = builder.addHeader("X-Nomad-Token", nomadToken);
+
+        Request request = builder.delete()
                 .build();
 
         try {
@@ -72,7 +73,37 @@ public final class NomadApi {
 
     }
 
-    private Map<String,Object> buildDriverConfig(String name, String secret, NomadSlaveTemplate template) {
+    JobInfo[] getRunningWorkers(String prefix, String nomadToken) {
+
+        JobInfo[] nomadJobs = null;
+
+        Request.Builder builder = new Request.Builder()
+                .url(this.nomadApi + "/v1/jobs?prefix=" + prefix)
+                .get();
+
+        if (StringUtils.isNotEmpty(nomadToken))
+            builder = builder.addHeader("X-Nomad-Token", nomadToken);
+
+        Request request = builder.build();
+
+        try {
+            ResponseBody body = client.newCall(request).execute().body();
+
+            if (body != null) {
+                Gson gson = new Gson();
+
+                nomadJobs = gson.fromJson(body.string(), JobInfo[].class);
+
+                body.close();
+            }
+        } catch (IOException e){
+            LOGGER.log(Level.SEVERE, "Failed to retrieve running jobs", e);
+        }
+
+        return nomadJobs;
+    }
+
+    private Map<String,Object> buildDriverConfig(String name, String secret, NomadCloud cloud, NomadSlaveTemplate template) {
         Map<String,Object> driverConfig = new HashMap<>();
 
         if (template.getUsername() != null && !template.getUsername().isEmpty()) {
@@ -86,35 +117,60 @@ public final class NomadApi {
             driverConfig.put("auth", credentials);
         }
 
-        // java -cp /local/slave.jar hudson.remoting.jnlp.Main --help
         ArrayList<String> args = new ArrayList<>();
-        args.add("-headless");
 
-        if (!template.getCloud().getJenkinsUrl().isEmpty()) {
-            args.add("-url");
-            args.add(template.getCloud().getJenkinsUrl());
-        }
+        if (template.isJavaDriver()) {
+            args.add("-jnlpUrl");
 
-        if (!template.getCloud().getJenkinsTunnel().isEmpty()) {
-            args.add("-tunnel");
-            args.add(template.getCloud().getJenkinsTunnel());
-        }
+            args.add(Util.ensureEndsWith(cloud.getJenkinsUrl(), "/") + "computer/" + name + "/slave-agent.jnlp");
 
-        if (!template.getRemoteFs().isEmpty()) {
-            args.add("-workDir");
-            args.add(Util.ensureEndsWith(template.getRemoteFs(), "/"));
-        }
+            // java -cp /local/slave.jar [options...] <secret key> <agent name>
+            if (!secret.isEmpty()) {
+                args.add("-secret");
+                args.add(secret);
+            }
 
-        // java -cp /local/slave.jar [options...] <secret key> <agent name>
-        if (!secret.isEmpty()) {
-            args.add(secret);
-        }
-        args.add(name);
-
-        if (template.getDriver().equals("java")) {
             driverConfig.put("jar_path", "/local/slave.jar");
             driverConfig.put("args", args);
-        } else if (template.getDriver().equals("docker")) {
+        } else if (template.isRawExecDriver()) {
+            args.add("-jar");
+            args.add("./local/slave.jar");
+
+            args.add("-jnlpUrl");
+            args.add(Util.ensureEndsWith(cloud.getJenkinsUrl(), "/") + "computer/" + name + "/slave-agent.jnlp");
+
+            // java -cp /local/slave.jar [options...] <secret key> <agent name>
+            if (!secret.isEmpty()) {
+                args.add("-secret");
+                args.add(secret);
+            }
+
+            driverConfig.put("command", "java");
+            driverConfig.put("args", args);
+        } else if (template.isDockerDriver()) {
+            args.add("-headless");
+
+            if (!cloud.getJenkinsUrl().isEmpty()) {
+                args.add("-url");
+                args.add(cloud.getJenkinsUrl());
+            }
+
+            if (!cloud.getJenkinsTunnel().isEmpty()) {
+                args.add("-tunnel");
+                args.add(cloud.getJenkinsTunnel());
+            }
+
+            if (!template.getRemoteFs().isEmpty()) {
+                args.add("-workDir");
+                args.add(Util.ensureEndsWith(template.getRemoteFs(), "/"));
+            }
+
+            // java -cp /local/slave.jar [options...] <secret key> <agent name>
+            if (!secret.isEmpty()) {
+                args.add(secret);
+            }
+            args.add(name);
+
             String prefixCmd = template.getPrefixCmd();
             // If an addtional command is defined - prepend it to jenkins slave invocation
             if (!prefixCmd.isEmpty())
@@ -136,7 +192,7 @@ public final class NomadApi {
             driverConfig.put("image", template.getImage());
 
             String hostVolumes = template.getHostVolumes();
-            if (!hostVolumes.isEmpty()) {
+            if (hostVolumes != null && !hostVolumes.isEmpty()) {
                 driverConfig.put("volumes", StringUtils.split(hostVolumes, ","));
             }
 
@@ -155,6 +211,21 @@ public final class NomadApi {
             driverConfig.put("force_pull", template.getForcePull());
             driverConfig.put("privileged", template.getPrivileged());
             driverConfig.put("network_mode", template.getNetwork());
+
+            String extraHosts = template.getExtraHosts();
+            if (extraHosts != null && !extraHosts.isEmpty()) {
+                driverConfig.put("extra_hosts", StringUtils.split(extraHosts, ", "));
+            }
+
+            String capAdd = template.getCapAdd();
+            if (capAdd != null && !capAdd.isEmpty()) {
+                driverConfig.put("cap_add", StringUtils.split(capAdd, ", "));
+            }
+
+            String capDrop = template.getCapDrop();
+            if (capDrop != null && !capDrop.isEmpty()) {
+                driverConfig.put("cap_drop", StringUtils.split(capDrop, ", "));
+            }
         }
 
         return driverConfig;
@@ -192,6 +263,7 @@ public final class NomadApi {
     String buildSlaveJob(
             String name,
             String secret,
+            NomadCloud cloud,
             NomadSlaveTemplate template
     ) {
         PortGroup portGroup = new PortGroup(template.getPorts());
@@ -204,7 +276,7 @@ public final class NomadApi {
                 "jenkins-slave",
                 template.getDriver(),
                 template.getSwitchUser(),
-                buildDriverConfig(name, secret, template),
+                buildDriverConfig(name, secret, cloud, template),
                 new Resource(
                     template.getCpu(),
                     template.getMemory(),
@@ -212,7 +284,7 @@ public final class NomadApi {
                 ),
                 new LogConfig(1, 10),
                 new Artifact[]{
-                    new Artifact(template.getCloud().getSlaveUrl(), null, "/local/")
+                    new Artifact(cloud.getSlaveUrl(), null, "/local/")
                 }
         );
 

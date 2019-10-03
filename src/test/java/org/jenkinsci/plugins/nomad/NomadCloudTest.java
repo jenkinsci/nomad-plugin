@@ -5,12 +5,11 @@ import hudson.slaves.NodeProvisioner;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-
-import org.mockito.Mockito;
 
 public class NomadCloudTest {
 
@@ -22,6 +21,9 @@ public class NomadCloudTest {
             "jenkinsUrl",
             "jenkinsTunnel",
             "slaveUrl",
+            "1",
+            "",
+            false,
             Collections.singletonList(slaveTemplate));
 
     @Before

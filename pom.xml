@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>nomad</artifactId>
-  <version>0.6.2-showmax</version>
+  <version>0.6.10-showmax</version>
   <packaging>hpi</packaging>
 
   <name>Nomad Plugin</name>
@@ -37,6 +37,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.level>8</java.level>
     <findbugs.failOnError>false</findbugs.failOnError>
+    <jenkins.version>2.121.1</jenkins.version>
+    <java.level>8</java.level>
   </properties>
 
   <developers>
@@ -77,7 +79,16 @@
       <artifactId>json</artifactId>
       <version>20180130</version>
     </dependency>
-
+    <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>credentials</artifactId>
+        <version>2.1.16</version>
+    </dependency>
+    <dependency>
+        <groupId>org.jenkins-ci.plugins</groupId>
+        <artifactId>plain-credentials</artifactId>
+        <version>1.4</version>
+    </dependency>
     <!-- TESTS -->
     <dependency>
       <groupId>org.mockito</groupId>

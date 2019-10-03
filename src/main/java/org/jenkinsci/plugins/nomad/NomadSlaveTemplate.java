@@ -8,22 +8,22 @@ import hudson.model.Label;
 import hudson.model.Node;
 import hudson.model.labels.LabelAtom;
 import jenkins.model.Jenkins;
+import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
-    private static final String SLAVE_PREFIX = "jenkins-";
+    private static final String SLAVE_PREFIX = "jenkins";
     private static final Logger LOGGER = Logger.getLogger(NomadSlaveTemplate.class.getName());
 
     private final int idleTerminationInMinutes;
     private final Boolean reusable;
     private final int numExecutors;
 
+    private final String prefix;
     private final int cpu;
     private final int memory;
     private final int disk;
@@ -32,6 +32,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final List<? extends NomadConstraintTemplate> constraints;
     private final String region;
     private final String remoteFs;
+    private final Boolean useRawExec;
     private final String image;
     private final Boolean privileged;
     private final String network;
@@ -45,20 +46,25 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final String switchUser;
     private final Node.Mode mode;
     private final List<? extends NomadPortTemplate> ports;
+    private final String extraHosts;
+    private final String capAdd;
+    private final String capDrop;
 
-    private NomadCloud cloud;
+
     private String driver;
     private String datacenters;
     private Set<LabelAtom> labelSet;
 
     @DataBoundConstructor
     public NomadSlaveTemplate(
+            String prefix,
             String cpu,
             String memory,
             String disk,
             String labels,
             List<? extends NomadConstraintTemplate> constraints,
             String remoteFs,
+            Boolean useRawExec,
             String idleTerminationInMinutes,
             Boolean reusable,
             String numExecutors,
@@ -77,8 +83,16 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             String hostVolumes,
             String hostDevices,
             String switchUser,
-            List<? extends NomadPortTemplate> ports
+            List<? extends NomadPortTemplate> ports,
+            String extraHosts,
+            String capAdd,
+            String capDrop
     ) {
+        if (StringUtils.isNotEmpty(prefix))
+            this.prefix = prefix;
+        else
+            this.prefix = SLAVE_PREFIX;
+
         this.cpu = Integer.parseInt(cpu);
         this.memory = Integer.parseInt(memory);
         this.disk = Integer.parseInt(disk);
@@ -88,6 +102,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.numExecutors = Integer.parseInt(numExecutors);
         this.mode = mode;
         this.remoteFs = remoteFs;
+        this.useRawExec = useRawExec;
         this.labels = Util.fixNull(labels);
         if (constraints == null) {
             this.constraints = Collections.emptyList();
@@ -103,21 +118,26 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         this.privileged = privileged;
         this.network = network;
         this.prefixCmd = prefixCmd;
+        this.switchUser = switchUser;
         this.forcePull = forcePull;
         this.sharedMem = sharedMemory;
         this.hostVolumes = hostVolumes;
         this.hostDevices = hostDevices;
-        this.switchUser = switchUser;
+//        this.switchUser = switchUser;
         if (ports == null) {
             this.ports = Collections.emptyList();
         } else {
             this.ports = ports;
         }
+        this.extraHosts = extraHosts;
+        this.capAdd = capAdd;
+        this.capDrop = capDrop;
         readResolve();
     }
 
     protected Object readResolve() {
         this.driver = !this.image.equals("") ? "docker" : "java";
+        if (this.useRawExec) this.driver = "raw_exec";
         return this;
     }
 
@@ -138,11 +158,11 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     @Override
     @SuppressWarnings("unchecked")
     public Descriptor<NomadSlaveTemplate> getDescriptor() {
-        return Jenkins.getInstance().getDescriptor(getClass());
+        return Jenkins.get().getDescriptor(getClass());
     }
 
     public String createSlaveName() {
-        return SLAVE_PREFIX + Long.toHexString(System.nanoTime());
+        return getPrefix() + "-" + Long.toHexString(System.nanoTime());
     }
 
     public Set<LabelAtom> getLabelSet() {
@@ -155,6 +175,12 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public Node.Mode getMode() {
         return mode;
+    }
+
+    public String getPrefix() {
+        if(StringUtils.isNotEmpty(prefix))
+            return prefix;
+        return SLAVE_PREFIX;
     }
 
     public int getCpu() {
@@ -197,16 +223,12 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return disk;
     }
 
-    public void setCloud(NomadCloud cloud) {
-        this.cloud = cloud;
-    }
-
-    public NomadCloud getCloud() {
-        return cloud;
-    }
-
     public String getRemoteFs() {
         return remoteFs;
+    }
+
+    public Boolean useRawExec() {
+        return useRawExec;
     }
 
     public String getImage() {
@@ -225,8 +247,24 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return prefixCmd;
     }
 
+    public String getSwitchUser() {
+        return switchUser;
+    }
+
     public String getDriver() {
         return driver;
+    }
+
+    public Boolean isDockerDriver(){
+        return getDriver().equals("docker");
+    }
+
+    public Boolean isJavaDriver(){
+        return getDriver().equals("java");
+    }
+
+    public Boolean isRawExecDriver(){
+        return getDriver().equals("raw_exec");
     }
 
     public Boolean getPrivileged() {
@@ -253,11 +291,19 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return hostDevices;
     }
 
-    public String getSwitchUser() {
-        return switchUser;
-    }
-
     public List<? extends NomadPortTemplate> getPorts() {
         return Collections.unmodifiableList(ports);
+    }
+
+    public String getCapAdd() {
+        return capAdd;
+    }
+
+    public String getCapDrop() {
+        return capDrop;
+    }
+
+    public String getExtraHosts() {
+        return extraHosts;
     }
 }

@@ -27,7 +27,7 @@ public class NomadPortTemplate implements Describable<NomadPortTemplate> {
     @Override
     @SuppressWarnings("unchecked")
     public Descriptor<NomadPortTemplate> getDescriptor() {
-        return Jenkins.getInstance().getDescriptor(getClass());
+        return Jenkins.get().getDescriptor(getClass());
     }
 
     public String getLabel() {

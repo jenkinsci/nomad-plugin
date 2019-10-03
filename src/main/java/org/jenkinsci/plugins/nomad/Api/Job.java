@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.nomad.Api;
 
 import java.util.List;
-import org.jenkinsci.plugins.nomad.NomadConstraintTemplate;
 
 public final class Job {
 

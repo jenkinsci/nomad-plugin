@@ -4,7 +4,7 @@
 
 	<table width="100%">
 
-		<f:entry title="LTarget" field="ltarget">
+		<f:entry title="Attribute" field="ltarget">
             <f:textbox/>
         </f:entry>
 
@@ -12,7 +12,7 @@
             <f:textbox/>
         </f:entry>
 
-        <f:entry title="RTarget" field="rtarget">
+        <f:entry title="Value" field="rtarget">
             <f:textbox/>
         </f:entry>
     

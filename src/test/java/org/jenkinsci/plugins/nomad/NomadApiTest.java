@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.nomad;
 
 import hudson.model.Node;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -16,14 +15,14 @@ import static org.junit.Assert.assertTrue;
 public class NomadApiTest {
 
     private NomadApi nomadApi = new NomadApi("http://localhost");
-    private List<NomadConstraintTemplate> constraintTest = new ArrayList<NomadConstraintTemplate>();
+    private List<NomadConstraintTemplate> constraintTest = new ArrayList<>();
     private NomadSlaveTemplate slaveTemplate = new NomadSlaveTemplate(
-            "300", "256", "100",
-            null, constraintTest, "remoteFs", "3", true, "1", Node.Mode.NORMAL,
+            "test", "300", "256", "100",
+            null, constraintTest, "remoteFs", false, "3", true, "1", Node.Mode.NORMAL,
             "ams", "0", "image", "dc01", "", "", false, "bridge",
-            "", "2048", true, "/mnt:/mnt",
-            "/dev:/dev,/dev,/dev/usb/0:/dev/usb:r", "jenkins", new ArrayList<NomadPortTemplate>() {
-    }
+            "", "2048", true, "/mnt:/mnt", "/dev:/dev,/dev,/dev/usb/0:/dev/usb:r",
+            "jenkins", new ArrayList<NomadPortTemplate>() {}, "my_host:192.168.1.1,",
+            "SYS_ADMIN, SYSLOG", "SYS_ADMIN, SYSLOG"
     );
 
     private NomadCloud nomadCloud = new NomadCloud(
@@ -32,16 +31,14 @@ public class NomadApiTest {
             "jenkinsUrl",
             "jenkinsTunnel",
             "slaveUrl",
+            "1",
+            "",
+            false,
             Collections.singletonList(slaveTemplate));
-
-    @Before
-    public void setup() {
-        slaveTemplate.setCloud(nomadCloud);
-    }
 
     @Test
     public void testStartSlave() {
-        String job = nomadApi.buildSlaveJob("slave-1", "secret", slaveTemplate);
+        String job = nomadApi.buildSlaveJob("slave-1", "secret", nomadCloud, slaveTemplate);
 
         assertTrue(job.contains("\"Region\":\"ams\""));
         assertTrue(job.contains("\"CPU\":300"));
@@ -55,6 +52,9 @@ public class NomadApiTest {
         assertTrue(job.contains("\"volumes\":[\"/mnt:/mnt\"]"));
         assertTrue(job.contains("\"devices\":[{\"host_path\":\"/dev\",\"container_path\":\"/dev\"},{\"host_path\":\"/dev\"},{\"host_path\":\"/dev/usb/0\",\"cgroup_permissions\":\"r\",\"container_path\":\"/dev/usb\"}]"));
         assertTrue(job.contains("\"User\":\"jenkins\""));
+        assertTrue(job.contains("\"extra_hosts\":[\"my_host:192.168.1.1\"]"));
+        assertTrue(job.contains("\"cap_add\":[\"SYS_ADMIN\",\"SYSLOG\"]"));
+        assertTrue(job.contains("\"cap_drop\":[\"SYS_ADMIN\",\"SYSLOG\"]"));
     }
 
 }
