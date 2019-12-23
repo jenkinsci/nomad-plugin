@@ -60,7 +60,7 @@
 
         <f:slave-mode name="mode" node="${instance}" />
 
-        <f:entry title="Workspace root" field="remoteFs">
+        <f:entry title="Workspace root" field="remoteFs" default="" >
             <f:textbox/>
         </f:entry>
 
@@ -84,7 +84,7 @@
             <f:entry title="Privileged">
                 <f:checkbox name="privileged" field="privileged" default="false" value="${instance.privileged}" />
             </f:entry>
-            <f:entry title="Shared memory" field="sharedMemory">
+            <f:entry title="Shared memory" field="sharedMemory" default="" >
                 <f:textbox/>
             </f:entry>
             <f:entry title="Host Volumes" field="hostVolumes">
@@ -97,7 +97,7 @@
                 <f:textbox name="network" field="network" default="bridge"/>
             </f:entry>
             <f:entry title="Prefix Command" field="preCmd">
-                <f:textbox name="prefixCmd" field="prefixCmd"/>
+                <f:textbox name="prefixCmd" field="prefixCmd" default="" />
             </f:entry>
             <f:entry title="Extra Hosts" field="extraHosts">
                 <f:textbox name="extraHosts" field="extraHosts" default="" />

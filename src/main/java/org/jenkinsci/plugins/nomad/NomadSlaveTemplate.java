@@ -108,12 +108,14 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             this.useRawExec = false;
         }
         this.labels = Util.fixNull(labels);
+        this.labelSet = Label.parse(this.labels);
+
         if (constraints == null) {
             this.constraints = Collections.emptyList();
         } else {
             this.constraints = constraints;
         }
-        this.labelSet = Label.parse(labels);
+
         this.region = region;
         this.image = image;
         this.datacenters = datacenters;
@@ -136,15 +138,15 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         } else {
             this.ports = ports;
         }
-        this.extraHosts = extraHosts;
-        this.capAdd = capAdd;
-        this.capDrop = capDrop;
+        this.extraHosts = Util.fixNull(extraHosts);
+        this.capAdd = Util.fixNull(capAdd);
+        this.capDrop = Util.fixNull(capDrop);
         readResolve();
     }
 
     protected Object readResolve() {
         this.driver = !this.image.equals("") ? "docker" : "java";
-        if (this.useRawExec) this.driver = "raw_exec";
+        if (this.useRawExec != null && this.useRawExec) this.driver = "raw_exec";
         return this;
     }
 
@@ -299,6 +301,9 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     }
 
     public List<? extends NomadPortTemplate> getPorts() {
+        if (ports == null) {
+            return Collections.emptyList();
+        }
         return Collections.unmodifiableList(ports);
     }
 
