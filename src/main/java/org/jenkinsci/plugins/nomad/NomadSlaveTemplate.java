@@ -45,6 +45,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final Node.Mode mode;
     private final List<? extends NomadPortTemplate> ports;
     private final String extraHosts;
+    private final String securityOpt;
     private final String capAdd;
     private final String capDrop;
 
@@ -81,6 +82,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             String switchUser,
             List<? extends NomadPortTemplate> ports,
             String extraHosts,
+            String securityOpt,
             String capAdd,
             String capDrop
     ) {
@@ -123,6 +125,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
             this.ports = ports;
         }
         this.extraHosts = extraHosts;
+        this.securityOpt = securityOpt;
         this.capAdd = capAdd;
         this.capDrop = capDrop;
         readResolve();
@@ -278,6 +281,10 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public List<? extends NomadPortTemplate> getPorts() {
         return Collections.unmodifiableList(ports);
+    }
+
+    public String getSecurityOpt() {
+        return securityOpt;
     }
 
     public String getCapAdd() {

@@ -22,7 +22,7 @@ public class NomadApiTest {
             null, constraintTest, "remoteFs", false, "3", true, "1", Node.Mode.NORMAL,
             "ams", "0", "image", "dc01", "", "", false, "bridge",
             "", true, "/mnt:/mnt", "jenkins", new ArrayList<NomadPortTemplate>() {},
-            "my_host:192.168.1.1,", "SYS_ADMIN, SYSLOG", "SYS_ADMIN, SYSLOG"
+            "my_host:192.168.1.1,","apparmor=unconfined, seccomp=unconfined","SYS_ADMIN, SYSLOG", "SYS_ADMIN, SYSLOG"
     );
 
     private NomadCloud nomadCloud = new NomadCloud(
@@ -51,8 +51,8 @@ public class NomadApiTest {
         assertTrue(job.contains("\"volumes\":[\"/mnt:/mnt\"]"));
         assertTrue(job.contains("\"User\":\"jenkins\""));
         assertTrue(job.contains("\"extra_hosts\":[\"my_host:192.168.1.1\"]"));
+        assertTrue(job.contains("\"security_opt\":[\"apparmor=unconfined\",\"seccomp=unconfined\"]"));
         assertTrue(job.contains("\"cap_add\":[\"SYS_ADMIN\",\"SYSLOG\"]"));
         assertTrue(job.contains("\"cap_drop\":[\"SYS_ADMIN\",\"SYSLOG\"]"));
     }
-
 }
