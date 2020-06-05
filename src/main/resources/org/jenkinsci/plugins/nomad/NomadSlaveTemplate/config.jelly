@@ -96,6 +96,9 @@
             <f:entry title="Extra Hosts" field="extraHosts">
                 <f:textbox name="extraHosts" field="extraHosts" default="" />
             </f:entry>
+            <f:entry title="Add Security Options" field="securityOpt">
+                <f:textbox name="securityOpt" field="securityOpt" default="" />
+            </f:entry>
             <f:entry title="Add Capabilities" field="capAdd">
                 <f:textbox name="capAdd" field="capAdd" default="" />
             </f:entry>

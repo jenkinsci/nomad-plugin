@@ -206,6 +206,11 @@ public final class NomadApi {
                 driverConfig.put("extra_hosts", StringUtils.split(extraHosts, ", "));
             }
 
+            String securityOpt = template.getSecurityOpt();
+            if (securityOpt != null && !securityOpt.isEmpty()) {
+                driverConfig.put("security_opt", StringUtils.split(securityOpt, ", "));
+            }
+            
             String capAdd = template.getCapAdd();
             if (capAdd != null && !capAdd.isEmpty()) {
                 driverConfig.put("cap_add", StringUtils.split(capAdd, ", "));
@@ -270,7 +275,7 @@ public final class NomadApi {
                 new TaskGroup[]{taskGroup}
         );
 
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().disableHtmlEscaping().create();
         JsonObject jobJson = new JsonObject();
 
         jobJson.add("Job", gson.toJsonTree(job));
