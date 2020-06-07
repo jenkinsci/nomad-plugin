@@ -18,6 +18,7 @@ import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.ResponseBody;
 import org.jenkinsci.plugins.nomad.Api.JobInfo;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -85,7 +86,7 @@ public class NomadCloud extends AbstractCloudImpl {
     private static String secretFor(String credentialsId) {
         List<StringCredentials> creds = filter(
                 lookupCredentials(StringCredentials.class,
-                        Jenkins.getInstance(),
+                        Jenkins.get(),
                         ACL.SYSTEM,
                         Collections.emptyList()),
                 withId(trimToEmpty(credentialsId))
@@ -274,8 +275,10 @@ public class NomadCloud extends AbstractCloudImpl {
                         .build();
 
                 OkHttpClient client = new OkHttpClient();
-                client.newCall(request).execute().body().close();
-
+                ResponseBody response = client.newCall(request).execute().body();
+                if (response != null) {
+                    response.close();
+                }
                 return FormValidation.ok("Nomad API request succeeded.");
             } catch (Exception e) {
                 return FormValidation.error(e.getMessage());
@@ -293,7 +296,7 @@ public class NomadCloud extends AbstractCloudImpl {
         }
 
         public ListBoxModel doFillNomadACLCredentialsIdItems(@QueryParameter("nomadACLCredentialsId") String credentialsId) {
-            if (!Jenkins.getInstance().hasPermission(Jenkins.ADMINISTER)) {
+            if (!Jenkins.get().hasPermission(Jenkins.ADMINISTER)) {
                 return new StandardListBoxModel().includeCurrentValue(credentialsId);
             }
             return new StandardListBoxModel()
@@ -301,7 +304,7 @@ public class NomadCloud extends AbstractCloudImpl {
                     .withMatching(
                             CredentialsMatchers.always(),
                             CredentialsProvider.lookupCredentials(StringCredentials.class,
-                                    Jenkins.getInstance(),
+                                    Jenkins.get(),
                                     ACL.SYSTEM,
                                     Collections.emptyList()));
         }

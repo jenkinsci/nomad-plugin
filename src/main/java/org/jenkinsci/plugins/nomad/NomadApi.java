@@ -49,7 +49,10 @@ public final class NomadApi {
             Request request = builder.put(body)
                     .build();
 
-            client.newCall(request).execute().body().close();
+            ResponseBody response = client.newCall(request).execute().body();
+            if (response != null) {
+                response.close();
+            }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
@@ -67,11 +70,13 @@ public final class NomadApi {
                 .build();
 
         try {
-            client.newCall(request).execute().body().close();
+            ResponseBody response = client.newCall(request).execute().body();
+            if (response != null) {
+                response.close();
+            }
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
-
     }
 
     JobInfo[] getRunningWorkers(String prefix, String nomadToken) {
