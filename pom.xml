@@ -2,101 +2,101 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+    <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <groupId>org.jenkins-ci.plugins</groupId>
-    <artifactId>plugin</artifactId>
-    <version>4.2</version>
-    <relativePath/>
-  </parent>
-
-  <artifactId>nomad</artifactId>
-  <version>0.7.0-SNAPSHOT</version>
-  <packaging>hpi</packaging>
-
-  <name>Nomad Plugin</name>
-  <description>Dynamically schedule Jenkins Slaves on a Nomad cluster</description>
-  <url>https://wiki.jenkins-ci.org/display/JENKINS/Nomad+Plugin</url>
-
-  <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
-  <licenses>
-    <license>
-      <name>MIT License</name>
-      <url>http://opensource.org/licenses/MIT</url>
-    </license>
-  </licenses>
-
-  <scm>
-    <connection>scm:git:ssh://github.com/jenkinsci/nomad-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/nomad-plugin.git
-    </developerConnection>
-    <url>https://github.com/jenkinsci/nomad-plugin</url>
-    <tag>v0.7.0</tag>
-  </scm>
-
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <java.level>8</java.level>
-    <findbugs.failOnError>false</findbugs.failOnError>
-    <jenkins.version>2.238</jenkins.version>
-  </properties>
-
-  <developers>
-    <developer>
-      <id>iverberk</id>
-      <name>Ivo Verberk</name>
-      <email>ivo@verberk.nl</email>
-    </developer>
-  </developers>
-
-  <repositories>
-    <repository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>repo.jenkins-ci.org</id>
-      <url>https://repo.jenkins-ci.org/public/</url>
-    </pluginRepository>
-  </pluginRepositories>
-
-  <dependencies>
-    <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <version>4.5.0</version>
-    </dependency>
-    <dependency>
-      <groupId>com.google.code.gson</groupId>
-      <artifactId>gson</artifactId>
-      <version>2.8.6</version>
-    </dependency>
-    <dependency>
-      <groupId>org.json</groupId>
-      <artifactId>json</artifactId>
-      <version>20200518</version>
-    </dependency>
-    <dependency>
+    <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>credentials</artifactId>
-      <version>2.3.7</version>
-    </dependency>
-    <dependency>
-        <groupId>org.jenkins-ci.plugins</groupId>
-        <artifactId>plain-credentials</artifactId>
-      <version>1.7</version>
-    </dependency>
-    <!-- TESTS -->
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>1.10.19</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+        <artifactId>plugin</artifactId>
+        <version>4.2</version>
+        <relativePath/>
+    </parent>
+
+    <artifactId>nomad</artifactId>
+    <version>0.7.0-SNAPSHOT</version>
+    <packaging>hpi</packaging>
+
+    <name>Nomad Plugin</name>
+    <description>Dynamically schedule Jenkins Slaves on a Nomad cluster</description>
+    <url>https://wiki.jenkins-ci.org/display/JENKINS/Nomad+Plugin</url>
+
+    <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:ssh://github.com/jenkinsci/nomad-plugin.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/jenkinsci/nomad-plugin.git
+        </developerConnection>
+        <url>https://github.com/jenkinsci/nomad-plugin</url>
+        <tag>v0.7.0</tag>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.level>8</java.level>
+        <findbugs.failOnError>false</findbugs.failOnError>
+        <jenkins.version>2.238</jenkins.version>
+    </properties>
+
+    <developers>
+        <developer>
+            <id>iverberk</id>
+            <name>Ivo Verberk</name>
+            <email>ivo@verberk.nl</email>
+        </developer>
+    </developers>
+
+    <repositories>
+        <repository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>repo.jenkins-ci.org</id>
+            <url>https://repo.jenkins-ci.org/public/</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
+            <version>4.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20200518</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>credentials</artifactId>
+            <version>2.3.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>plain-credentials</artifactId>
+            <version>1.7</version>
+        </dependency>
+        <!-- TESTS -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.10.19</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
 </project>
