@@ -1,5 +1,7 @@
 package org.jenkinsci.plugins.nomad.Api;
 
+import java.util.Arrays;
+
 public class TaskGroup {
     private String Name;
     private Integer Count;
@@ -10,7 +12,7 @@ public class TaskGroup {
     public TaskGroup(String name, Integer count, Task[] tasks, RestartPolicy restartPolicy, EphemeralDisk ephemeralDisk) {
         Name = name;
         Count = count;
-        Tasks = tasks;
+        Tasks = Arrays.copyOf(tasks, tasks.length);
         RestartPolicy = restartPolicy;
         EphemeralDisk = ephemeralDisk;
     }
@@ -32,11 +34,11 @@ public class TaskGroup {
     }
 
     public Task[] getTasks() {
-        return Tasks;
+        return Arrays.copyOf(Tasks, Tasks.length);
     }
 
     public void setTasks(Task[] tasks) {
-        Tasks = tasks;
+        Tasks = Arrays.copyOf(tasks, tasks.length);
     }
 
     public RestartPolicy getRestartPolicy() {

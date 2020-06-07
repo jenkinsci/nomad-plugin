@@ -65,7 +65,7 @@ public class NomadConstraintTemplate implements Describable<NomadConstraintTempl
 
         @Override
         public String getDisplayName() {
-            return null;
+            return "NomadSlaveTemplate";
         }
     }
 }

@@ -55,7 +55,7 @@ public class NomadPortTemplate implements Describable<NomadPortTemplate> {
 
         @Override
         public String getDisplayName() {
-            return null;
+            return "";
         }
     }
 }

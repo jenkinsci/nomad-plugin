@@ -50,11 +50,9 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private final String securityOpt;
     private final String capAdd;
     private final String capDrop;
-
-
-    private String driver;
     private final String datacenters;
     private final Set<LabelAtom> labelSet;
+    private String driver;
 
     @DataBoundConstructor
     public NomadSlaveTemplate(
@@ -296,7 +294,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
         @Override
         public String getDisplayName() {
-            return null;
+            return "";
         }
     }
 }

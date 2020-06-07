@@ -1,5 +1,6 @@
 package org.jenkinsci.plugins.nomad.Api;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public class Task {
@@ -26,7 +27,7 @@ public class Task {
         Config = config;
         Resources = resources;
         LogConfig = logConfig;
-        Artifacts = artifacts;
+        Artifacts = Arrays.copyOf(artifacts, artifacts.length);
     }
 
     public String getName() {
@@ -78,11 +79,11 @@ public class Task {
     }
 
     public Artifact[] getArtifacts() {
-        return Artifacts;
+        return Arrays.copyOf(Artifacts, Artifacts.length);
     }
 
     public void setArtifacts(Artifact[] artifacts) {
-        Artifacts = artifacts;
+        Artifacts = Arrays.copyOf(artifacts, artifacts.length);
     }
 
 }

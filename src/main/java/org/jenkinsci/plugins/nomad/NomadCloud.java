@@ -3,7 +3,6 @@ package org.jenkinsci.plugins.nomad;
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
-import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import com.google.common.base.Strings;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -251,7 +250,7 @@ public class NomadCloud extends AbstractCloudImpl {
         return Collections.unmodifiableList(templates);
     }
 
-    public NomadApi Nomad() {
+    public NomadApi nomad() {
         return nomad;
     }
 
