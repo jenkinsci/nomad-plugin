@@ -10,7 +10,7 @@
             <f:textbox/>
         </f:entry>
 
-        <f:slave-mode name="mode" node="${instance}" />
+        <f:worker-mode name="mode" node="${instance}" />
 
         <f:entry title="${%Remote FS}" field="remoteFS">
           <f:readOnlyTextbox />

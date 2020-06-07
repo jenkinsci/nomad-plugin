@@ -7,16 +7,16 @@ import hudson.slaves.AbstractCloudComputer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class NomadComputer extends AbstractCloudComputer<NomadSlave> {
+public class NomadComputer extends AbstractCloudComputer<NomadWorker> {
 
     private static final Logger LOGGER = Logger.getLogger(NomadComputer.class.getName());
 
     private final Boolean reusable;
 
-    public NomadComputer(NomadSlave slave) {
-        super(slave);
+    public NomadComputer(NomadWorker worker) {
+        super(worker);
 
-        this.reusable = slave.getReusable();
+        this.reusable = worker.getReusable();
     }
 
     @Override
@@ -42,7 +42,7 @@ public class NomadComputer extends AbstractCloudComputer<NomadSlave> {
 
     @Override
     public String toString() {
-        return String.format("%s (slave: %s)", getName(), getNode());
+        return String.format("%s (worker: %s)", getName(), getNode());
     }
 
 }

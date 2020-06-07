@@ -16,7 +16,7 @@
     <packaging>hpi</packaging>
 
     <name>Nomad Plugin</name>
-    <description>Dynamically schedule Jenkins Slaves on a Nomad cluster</description>
+    <description>Dynamically schedule Jenkins Workers on a Nomad cluster</description>
     <url>https://wiki.jenkins-ci.org/display/JENKINS/Nomad+Plugin</url>
 
     <!-- The default licence for Jenkins OSS Plugins is MIT. Substitute for the applicable one if needed. -->
@@ -98,5 +98,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>

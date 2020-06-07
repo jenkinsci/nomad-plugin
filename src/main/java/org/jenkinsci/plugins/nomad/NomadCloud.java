@@ -39,14 +39,14 @@ public class NomadCloud extends AbstractCloudImpl {
 
     private static final Logger LOGGER = Logger.getLogger(NomadCloud.class.getName());
 
-    private final List<? extends NomadSlaveTemplate> templates;
+    private final List<? extends NomadWorkerTemplate> templates;
 
     private final String nomadUrl;
     private final String nomadACLCredentialsId;
     private final Boolean prune;
     private String jenkinsUrl;
     private String jenkinsTunnel;
-    private String slaveUrl;
+    private String workerUrl;
     private int workerTimeout = 1;
     private NomadApi nomad;
 
@@ -58,11 +58,11 @@ public class NomadCloud extends AbstractCloudImpl {
             String nomadUrl,
             String jenkinsUrl,
             String jenkinsTunnel,
-            String slaveUrl,
+            String workerUrl,
             String workerTimeout,
             String nomadACLCredentialsId,
             Boolean prune,
-            List<? extends NomadSlaveTemplate> templates) {
+            List<? extends NomadWorkerTemplate> templates) {
         super(name, null);
 
         this.nomadACLCredentialsId = nomadACLCredentialsId;
@@ -70,7 +70,7 @@ public class NomadCloud extends AbstractCloudImpl {
 
         this.jenkinsUrl = jenkinsUrl;
         this.jenkinsTunnel = jenkinsTunnel;
-        this.slaveUrl = slaveUrl;
+        this.workerUrl = workerUrl;
         setWorkerTimeout(workerTimeout);
         this.prune = prune;
 
@@ -105,8 +105,8 @@ public class NomadCloud extends AbstractCloudImpl {
             jenkinsUrl = Jenkins.get().getRootUrl();
         }
 
-        if (slaveUrl.equals("")) {
-            slaveUrl = jenkinsUrl + "jnlpJars/slave.jar";
+        if (workerUrl.equals("")) {
+            workerUrl = jenkinsUrl + "jnlpJars/slave.jar";
         }
 
         return this;
@@ -116,7 +116,7 @@ public class NomadCloud extends AbstractCloudImpl {
     public Collection<NodeProvisioner.PlannedNode> provision(Label label, int excessWorkload) {
 
         List<NodeProvisioner.PlannedNode> nodes = new ArrayList<>();
-        final NomadSlaveTemplate template = getTemplate(label);
+        final NomadWorkerTemplate template = getTemplate(label);
 
         if (template != null) {
             if (getPrune())
@@ -124,27 +124,27 @@ public class NomadCloud extends AbstractCloudImpl {
 
             try {
                 while (excessWorkload > 0) {
-                    LOGGER.log(Level.INFO, "Excess workload of " + excessWorkload + ", provisioning new Jenkins slave on Nomad cluster");
+                    LOGGER.log(Level.INFO, "Excess workload of " + excessWorkload + ", provisioning new Jenkins worker on Nomad cluster");
 
-                    final String slaveName = template.createSlaveName();
+                    final String workerName = template.createWorkerName();
                     nodes.add(new NodeProvisioner.PlannedNode(
-                            slaveName,
+                            workerName,
                             NomadComputer.threadPoolForRemoting.submit(
-                                    new ProvisioningCallback(slaveName, template, this)
+                                    new ProvisioningCallback(workerName, template, this)
                             ), template.getNumExecutors()));
                     excessWorkload -= template.getNumExecutors();
                     pending += template.getNumExecutors();
                 }
                 return nodes;
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Unable to schedule new Jenkins slave on Nomad cluster, message: " + e.getMessage());
+                LOGGER.log(Level.SEVERE, "Unable to schedule new Jenkins worker on Nomad cluster, message: " + e.getMessage());
             }
         }
 
         return Collections.emptyList();
     }
 
-    private void pruneOrphanedWorkers(NomadSlaveTemplate template) {
+    private void pruneOrphanedWorkers(NomadWorkerTemplate template) {
         JobInfo[] nomadWorkers = this.nomad.getRunningWorkers(template.getPrefix(), getNomadACL());
 
         for (JobInfo worker : nomadWorkers) {
@@ -154,7 +154,7 @@ public class NomadCloud extends AbstractCloudImpl {
 
                 if (node == null) {
                     LOGGER.log(Level.FINE, "Found Orphaned Node: " + worker.getID());
-                    this.nomad.stopSlave(worker.getID(), getNomadACL());
+                    this.nomad.stopWorker(worker.getID(), getNomadACL());
                 }
             }
         }
@@ -162,8 +162,8 @@ public class NomadCloud extends AbstractCloudImpl {
     }
 
     // Find the correct template for job
-    public NomadSlaveTemplate getTemplate(Label label) {
-        for (NomadSlaveTemplate t : templates) {
+    public NomadWorkerTemplate getTemplate(Label label) {
+        for (NomadWorkerTemplate t : templates) {
             if (label == null && !t.getLabelSet().isEmpty()) {
                 continue;
             }
@@ -196,12 +196,12 @@ public class NomadCloud extends AbstractCloudImpl {
         this.jenkinsUrl = jenkinsUrl;
     }
 
-    public String getSlaveUrl() {
-        return slaveUrl;
+    public String getWorkerUrl() {
+        return workerUrl;
     }
 
-    public void setSlaveUrl(String slaveUrl) {
-        this.slaveUrl = slaveUrl;
+    public void setWorkerUrl(String workerUrl) {
+        this.workerUrl = workerUrl;
     }
 
     public int getWorkerTimeout() {
@@ -247,7 +247,7 @@ public class NomadCloud extends AbstractCloudImpl {
         this.jenkinsTunnel = jenkinsTunnel;
     }
 
-    public List<NomadSlaveTemplate> getTemplates() {
+    public List<NomadWorkerTemplate> getTemplates() {
         return Collections.unmodifiableList(templates);
     }
 
@@ -312,41 +312,41 @@ public class NomadCloud extends AbstractCloudImpl {
 
     private class ProvisioningCallback implements Callable<Node> {
 
-        String slaveName;
-        NomadSlaveTemplate template;
+        String workerName;
+        NomadWorkerTemplate template;
         NomadCloud cloud;
 
-        public ProvisioningCallback(String slaveName, NomadSlaveTemplate template, NomadCloud cloud) {
-            this.slaveName = slaveName;
+        public ProvisioningCallback(String workerName, NomadWorkerTemplate template, NomadCloud cloud) {
+            this.workerName = workerName;
             this.template = template;
             this.cloud = cloud;
         }
 
         public Node call() throws Exception {
-            final NomadSlave slave = new NomadSlave(
-                    slaveName,
+            final NomadWorker worker = new NomadWorker(
+                    workerName,
                     name,
                     template,
                     template.getLabels(),
                     new NomadRetentionStrategy(template.getIdleTerminationInMinutes()),
                     Collections.emptyList()
             );
-            Jenkins.get().addNode(slave);
+            Jenkins.get().addNode(worker);
 
             // Support for Jenkins security
             String jnlpSecret = "";
             if (Jenkins.get().isUseSecurity()) {
-                jnlpSecret = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(slaveName);
+                jnlpSecret = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(workerName);
             }
 
-            LOGGER.log(Level.INFO, "Asking Nomad to schedule new Jenkins slave");
-            nomad.startSlave(cloud, slaveName, getNomadACL(), jnlpSecret, template);
+            LOGGER.log(Level.INFO, "Asking Nomad to schedule new Jenkins worker");
+            nomad.startWorker(cloud, workerName, getNomadACL(), jnlpSecret, template);
 
             // Check scheduling success
             Callable<Boolean> callableTask = () -> {
                 try {
-                    LOGGER.log(Level.INFO, "Slave scheduled, waiting for connection");
-                    Objects.requireNonNull(slave.toComputer()).waitUntilOnline();
+                    LOGGER.log(Level.INFO, "Worker scheduled, waiting for connection");
+                    Objects.requireNonNull(worker.toComputer()).waitUntilOnline();
                 } catch (InterruptedException e) {
                     LOGGER.log(Level.SEVERE, "Waiting for connection was interrupted");
                     return false;
@@ -354,7 +354,7 @@ public class NomadCloud extends AbstractCloudImpl {
                 return true;
             };
 
-            // Schedule a slave and wait for the computer to come online
+            // Schedule a worker and wait for the computer to come online
             ExecutorService executorService = Executors.newCachedThreadPool();
             Future<Boolean> future = executorService.submit(callableTask);
 
@@ -362,15 +362,15 @@ public class NomadCloud extends AbstractCloudImpl {
                 future.get(cloud.workerTimeout, TimeUnit.MINUTES);
                 LOGGER.log(Level.INFO, "Connection established");
             } catch (Exception ex) {
-                LOGGER.log(Level.SEVERE, "Slave computer did not come online within " + workerTimeout + " minutes, terminating slave" + slave);
-                slave.terminate();
+                LOGGER.log(Level.SEVERE, "Worker computer did not come online within " + workerTimeout + " minutes, terminating worker" + worker);
+                worker.terminate();
                 throw new RuntimeException("Timed out waiting for agent to start up. Timeout: " + workerTimeout + " minutes.");
             } finally {
                 future.cancel(true);
                 executorService.shutdown();
                 pending -= template.getNumExecutors();
             }
-            return slave;
+            return worker;
         }
     }
 }

@@ -30,15 +30,15 @@
     <c:select/>
   </f:entry>
 
-  <f:entry title="Jenkins Slave URL" field="slaveUrl" description="Jenkins slave URL">
-    <f:textbox default="${instance.getSlaveUrl()}"/>
+  <f:entry title="Jenkins Worker URL" field="workerUrl" description="Jenkins worker URL">
+    <f:textbox default="${instance.getWorkerUrl()}"/>
   </f:entry>
 
   <f:validateButton title="Test connection" progress="Testing API connectivity..." method="testConnection" with="nomadUrl"/>
 
-  <f:entry title="Slave Templates">
+  <f:entry title="Worker Templates">
     <f:repeatable field="templates">
-      <st:include page="/org/jenkinsci/plugins/nomad/NomadSlaveTemplate/config.jelly" class="org.jenkinsci.plugins.nomad.NomadSlaveTemplate$DescriptorImpl"/>
+      <st:include page="/org/jenkinsci/plugins/nomad/NomadWorkerTemplate/config.jelly" class="org.jenkinsci.plugins.nomad.NomadWorkerTemplate$DescriptorImpl"/>
     </f:repeatable>
   </f:entry>
 

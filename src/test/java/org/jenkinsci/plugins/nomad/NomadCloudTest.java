@@ -13,26 +13,26 @@ import java.util.Set;
 
 public class NomadCloudTest {
 
-    private final NomadSlaveTemplate slaveTemplate = Mockito.mock(NomadSlaveTemplate.class);
+    private final NomadWorkerTemplate workerTemplate = Mockito.mock(NomadWorkerTemplate.class);
     private final LabelAtom label = Mockito.mock(LabelAtom.class);
     private final NomadCloud nomadCloud = new NomadCloud(
             "nomad",
             "nomadUrl",
             "jenkinsUrl",
             "jenkinsTunnel",
-            "slaveUrl",
+            "workerUrl",
             "1",
             "",
             false,
-            Collections.singletonList(slaveTemplate));
+            Collections.singletonList(workerTemplate));
 
     @Before
     public void setup() {
         Set<LabelAtom> labels = Collections.singleton(label);
         Mockito.when(label.matches(Mockito.anyCollectionOf(LabelAtom.class))).thenReturn(true);
-        Mockito.when(slaveTemplate.createSlaveName()).thenReturn("slave-1", "slave-2", "slave-3");
-        Mockito.when(slaveTemplate.getNumExecutors()).thenReturn(1);
-        Mockito.when(slaveTemplate.getLabelSet()).thenReturn(labels);
+        Mockito.when(workerTemplate.createWorkerName()).thenReturn("worker-1", "worker-2", "worker-3");
+        Mockito.when(workerTemplate.getNumExecutors()).thenReturn(1);
+        Mockito.when(workerTemplate.getLabelSet()).thenReturn(labels);
     }
 
     @Test

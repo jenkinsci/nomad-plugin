@@ -58,7 +58,7 @@
             <f:textbox default="1" />
         </f:entry>
 
-        <f:slave-mode name="mode" node="${instance}" />
+        <f:worker-mode name="mode" node="${instance}" />
 
         <f:entry title="Workspace root" field="remoteFs">
             <f:textbox/>

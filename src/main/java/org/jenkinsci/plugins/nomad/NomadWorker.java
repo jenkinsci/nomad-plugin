@@ -15,18 +15,18 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
+public class NomadWorker extends AbstractCloudSlave implements EphemeralNode {
 
-    private static final Logger LOGGER = Logger.getLogger(NomadSlave.class.getName());
-    private static final String NODE_DESCRIPTION = "Nomad Jenkins Slave";
+    private static final Logger LOGGER = Logger.getLogger(NomadWorker.class.getName());
+    private static final String NODE_DESCRIPTION = "Nomad Jenkins Worker";
     private final Boolean reusable;
     private final String cloudName;
     private final int idleTerminationInMinutes;
 
-    public NomadSlave(
+    public NomadWorker(
             String name,
             String cloudName,
-            NomadSlaveTemplate template,
+            NomadWorkerTemplate template,
             String labelString,
             NomadRetentionStrategy retentionStrategy,
             List<? extends NodeProperty<?>> nodeProperties
@@ -51,7 +51,7 @@ public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
 
     @DataBoundConstructor
     // {"name":"jenkins-95266550a531","cloudName":"NomadTest","labelString":"test","mode":"NORMAL","remoteFS":"/","numExecutors":"1","idleTerminationInMinutes":"10","reusable":true}
-    public NomadSlave(String name, String cloudName, String remoteFS, String numExecutors, Mode mode, String labelString, String idleTerminationInMinutes, boolean reusable) throws FormException, IOException {
+    public NomadWorker(String name, String cloudName, String remoteFS, String numExecutors, Mode mode, String labelString, String idleTerminationInMinutes, boolean reusable) throws FormException, IOException {
         super(name, NODE_DESCRIPTION, remoteFS, numExecutors, mode, labelString, new JNLPLauncher(), new NomadRetentionStrategy(idleTerminationInMinutes), Collections.emptyList());
 
         this.cloudName = cloudName;
@@ -66,14 +66,14 @@ public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
     }
 
     @Override
-    public AbstractCloudComputer<NomadSlave> createComputer() {
+    public AbstractCloudComputer<NomadWorker> createComputer() {
         return new NomadComputer(this);
     }
 
     @Override
     protected void _terminate(TaskListener listener) {
-        LOGGER.log(Level.INFO, "Asking Nomad to deregister slave '" + getNodeName() + "'");
-        getCloud().nomad().stopSlave(getNodeName(), getCloud().getNomadACL());
+        LOGGER.log(Level.INFO, "Asking Nomad to deregister worker '" + getNodeName() + "'");
+        getCloud().nomad().stopWorker(getNodeName(), getCloud().getNomadACL());
     }
 
     public NomadCloud getCloud() {
@@ -100,7 +100,7 @@ public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
 
         @Override
         public String getDisplayName() {
-            return "Nomad Slave";
+            return "Nomad Worker";
         }
 
         /**

@@ -11,7 +11,7 @@ public class NomadPortTemplate implements Describable<NomadPortTemplate> {
     private final String label;
     private final String value;
 
-    private NomadSlaveTemplate slave;
+    private NomadWorkerTemplate worker;
 
     @DataBoundConstructor
     public NomadPortTemplate(String label, String value) {
@@ -38,12 +38,12 @@ public class NomadPortTemplate implements Describable<NomadPortTemplate> {
         return value;
     }
 
-    public NomadSlaveTemplate getNomadSlaveTemplate() {
-        return slave;
+    public NomadWorkerTemplate getNomadWorkerTemplate() {
+        return worker;
     }
 
-    public void setNomadSlaveTemplate(NomadSlaveTemplate slave) {
-        this.slave = slave;
+    public void setNomadWorkerTemplate(NomadWorkerTemplate worker) {
+        this.worker = worker;
     }
 
     @Extension

@@ -16,7 +16,7 @@ public class NomadApiTest {
 
     private final NomadApi nomadApi = new NomadApi("http://localhost");
     private final List<NomadConstraintTemplate> constraintTest = new ArrayList<NomadConstraintTemplate>();
-    private final NomadSlaveTemplate slaveTemplate = new NomadSlaveTemplate(
+    private final NomadWorkerTemplate workerTemplate = new NomadWorkerTemplate(
             "test", "300", "256", "100",
             null, constraintTest, "remoteFs", false, "3", true, "1", Node.Mode.NORMAL,
             "ams", "0", "image", "dc01", "", "", false, "bridge",
@@ -30,21 +30,21 @@ public class NomadApiTest {
             "nomadUrl",
             "jenkinsUrl",
             "jenkinsTunnel",
-            "slaveUrl",
+            "workerUrl",
             "1",
             "",
             false,
-            Collections.singletonList(slaveTemplate));
+            Collections.singletonList(workerTemplate));
 
     @Test
-    public void testStartSlave() {
-        String job = nomadApi.buildSlaveJob("slave-1", "secret", nomadCloud, slaveTemplate);
+    public void testStartWorker() {
+        String job = nomadApi.buildWorkerJob("worker-1", "secret", nomadCloud, workerTemplate);
 
         assertTrue(job.contains("\"Region\":\"ams\""));
         assertTrue(job.contains("\"CPU\":300"));
         assertTrue(job.contains("\"MemoryMB\":256"));
         assertTrue(job.contains("\"SizeMB\":100"));
-        assertTrue(job.contains("\"GetterSource\":\"slaveUrl\""));
+        assertTrue(job.contains("\"GetterSource\":\"workerUrl\""));
         assertTrue(job.contains("\"privileged\":false"));
         assertTrue(job.contains("\"network_mode\":\"bridge\""));
         assertTrue(job.contains("\"force_pull\":true"));

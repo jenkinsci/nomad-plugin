@@ -12,7 +12,7 @@ public class NomadConstraintTemplate implements Describable<NomadConstraintTempl
     private final String operand;
     private final String rtarget;
 
-    private NomadSlaveTemplate slave;
+    private NomadWorkerTemplate worker;
 
     @DataBoundConstructor
     public NomadConstraintTemplate(
@@ -48,12 +48,12 @@ public class NomadConstraintTemplate implements Describable<NomadConstraintTempl
         return rtarget;
     }
 
-    public NomadSlaveTemplate getNomadSlaveTemplate() {
-        return slave;
+    public NomadWorkerTemplate getNomadWorkerTemplate() {
+        return worker;
     }
 
-    public void setNomadSlaveTemplate(NomadSlaveTemplate slave) {
-        this.slave = slave;
+    public void setNomadWorkerTemplate(NomadWorkerTemplate worker) {
+        this.worker = worker;
     }
 
     @Extension
@@ -65,7 +65,7 @@ public class NomadConstraintTemplate implements Describable<NomadConstraintTempl
 
         @Override
         public String getDisplayName() {
-            return "NomadSlaveTemplate";
+            return "NomadWorkerTemplate";
         }
     }
 }

@@ -16,10 +16,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
-public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
+public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
 
     private static final String SLAVE_PREFIX = "jenkins";
-    private static final Logger LOGGER = Logger.getLogger(NomadSlaveTemplate.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(NomadWorkerTemplate.class.getName());
 
     private final int idleTerminationInMinutes;
     private final Boolean reusable;
@@ -55,7 +55,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     private String driver;
 
     @DataBoundConstructor
-    public NomadSlaveTemplate(
+    public NomadWorkerTemplate(
             String prefix,
             String cpu,
             String memory,
@@ -139,11 +139,11 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public Descriptor<NomadSlaveTemplate> getDescriptor() {
+    public Descriptor<NomadWorkerTemplate> getDescriptor() {
         return Jenkins.get().getDescriptor(getClass());
     }
 
-    public String createSlaveName() {
+    public String createWorkerName() {
         return getPrefix() + "-" + Long.toHexString(System.nanoTime());
     }
 
@@ -286,7 +286,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     }
 
     @Extension
-    public static final class DescriptorImpl extends Descriptor<NomadSlaveTemplate> {
+    public static final class DescriptorImpl extends Descriptor<NomadWorkerTemplate> {
 
         public DescriptorImpl() {
             load();

@@ -27,21 +27,21 @@ public final class NomadApi {
         this.nomadApi = nomadApi;
     }
 
-    void startSlave(NomadCloud cloud, String slaveName, String nomadToken, String jnlpSecret, NomadSlaveTemplate template) {
+    void startWorker(NomadCloud cloud, String workerName, String nomadToken, String jnlpSecret, NomadWorkerTemplate template) {
 
-        String slaveJob = buildSlaveJob(
-                slaveName,
+        String workerJob = buildWorkerJob(
+                workerName,
                 jnlpSecret,
                 cloud,
                 template
         );
 
-        LOGGER.log(Level.FINE, slaveJob);
+        LOGGER.log(Level.FINE, workerJob);
 
         try {
-            RequestBody body = RequestBody.create(JSON, slaveJob);
+            RequestBody body = RequestBody.create(JSON, workerJob);
             Request.Builder builder = new Request.Builder()
-                    .url(this.nomadApi + "/v1/job/" + slaveName + "?region=" + template.getRegion());
+                    .url(this.nomadApi + "/v1/job/" + workerName + "?region=" + template.getRegion());
 
             if (StringUtils.isNotEmpty(nomadToken))
                 builder = builder.header("X-Nomad-Token", nomadToken);
@@ -58,10 +58,10 @@ public final class NomadApi {
         }
     }
 
-    void stopSlave(String slaveName, String nomadToken) {
+    void stopWorker(String workerName, String nomadToken) {
 
         Request.Builder builder = new Request.Builder()
-                .url(this.nomadApi + "/v1/job/" + slaveName);
+                .url(this.nomadApi + "/v1/job/" + workerName);
 
         if (StringUtils.isNotEmpty(nomadToken))
             builder = builder.addHeader("X-Nomad-Token", nomadToken);
@@ -109,7 +109,7 @@ public final class NomadApi {
         return nomadJobs;
     }
 
-    private Map<String, Object> buildDriverConfig(String name, String secret, NomadCloud cloud, NomadSlaveTemplate template) {
+    private Map<String, Object> buildDriverConfig(String name, String secret, NomadCloud cloud, NomadWorkerTemplate template) {
         Map<String, Object> driverConfig = new HashMap<>();
 
         if (template.getUsername() != null && !template.getUsername().isEmpty()) {
@@ -128,7 +128,7 @@ public final class NomadApi {
         if (template.isJavaDriver()) {
             args.add("-jnlpUrl");
 
-            args.add(Util.ensureEndsWith(cloud.getJenkinsUrl(), "/") + "computer/" + name + "/slave-agent.jnlp");
+            args.add(Util.ensureEndsWith(cloud.getJenkinsUrl(), "/") + "computer/" + name + "/worker-agent.jnlp");
 
             // java -cp /local/slave.jar [options...] <secret key> <agent name>
             if (!secret.isEmpty()) {
@@ -143,7 +143,7 @@ public final class NomadApi {
             args.add("./local/slave.jar");
 
             args.add("-jnlpUrl");
-            args.add(Util.ensureEndsWith(cloud.getJenkinsUrl(), "/") + "computer/" + name + "/slave-agent.jnlp");
+            args.add(Util.ensureEndsWith(cloud.getJenkinsUrl(), "/") + "computer/" + name + "/worker-agent.jnlp");
 
             // java -cp /local/slave.jar [options...] <secret key> <agent name>
             if (!secret.isEmpty()) {
@@ -178,7 +178,7 @@ public final class NomadApi {
             args.add(name);
 
             String prefixCmd = template.getPrefixCmd();
-            // If an addtional command is defined - prepend it to jenkins slave invocation
+            // If an addtional command is defined - prepend it to jenkins worker invocation
             if (!prefixCmd.isEmpty()) {
                 driverConfig.put("command", "/bin/bash");
                 String argString =
@@ -229,11 +229,11 @@ public final class NomadApi {
         return driverConfig;
     }
 
-    String buildSlaveJob(
+    String buildWorkerJob(
             String name,
             String secret,
             NomadCloud cloud,
-            NomadSlaveTemplate template
+            NomadWorkerTemplate template
     ) {
         PortGroup portGroup = new PortGroup(template.getPorts());
         Network network = new Network(1, portGroup.getPorts());
@@ -242,7 +242,7 @@ public final class NomadApi {
         networks.add(network);
 
         Task task = new Task(
-                "jenkins-slave",
+                "jenkins-worker",
                 template.getDriver(),
                 template.getSwitchUser(),
                 buildDriverConfig(name, secret, cloud, template),
@@ -253,12 +253,12 @@ public final class NomadApi {
                 ),
                 new LogConfig(1, 10),
                 new Artifact[]{
-                        new Artifact(cloud.getSlaveUrl(), null, "/local/")
+                        new Artifact(cloud.getWorkerUrl(), null, "/local/")
                 }
         );
 
         TaskGroup taskGroup = new TaskGroup(
-                "jenkins-slave-taskgroup",
+                "jenkins-worker-taskgroup",
                 1,
                 new Task[]{task},
                 new RestartPolicy(0, 10000000000L, 1000000000L, "fail"),
