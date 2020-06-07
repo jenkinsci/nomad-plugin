@@ -11,7 +11,9 @@ import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 
 public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
@@ -51,8 +53,8 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
 
     private String driver;
-    private String datacenters;
-    private Set<LabelAtom> labelSet;
+    private final String datacenters;
+    private final Set<LabelAtom> labelSet;
 
     @DataBoundConstructor
     public NomadSlaveTemplate(
@@ -137,20 +139,6 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return this;
     }
 
-
-    @Extension
-    public static final class DescriptorImpl extends Descriptor<NomadSlaveTemplate> {
-
-        public DescriptorImpl() {
-            load();
-        }
-
-        @Override
-        public String getDisplayName() {
-            return null;
-        }
-    }
-
     @Override
     @SuppressWarnings("unchecked")
     public Descriptor<NomadSlaveTemplate> getDescriptor() {
@@ -174,7 +162,7 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
     }
 
     public String getPrefix() {
-        if(StringUtils.isNotEmpty(prefix))
+        if (StringUtils.isNotEmpty(prefix))
             return prefix;
         return SLAVE_PREFIX;
     }
@@ -251,15 +239,15 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
         return driver;
     }
 
-    public Boolean isDockerDriver(){
+    public Boolean isDockerDriver() {
         return getDriver().equals("docker");
     }
 
-    public Boolean isJavaDriver(){
+    public Boolean isJavaDriver() {
         return getDriver().equals("java");
     }
 
-    public Boolean isRawExecDriver(){
+    public Boolean isRawExecDriver() {
         return getDriver().equals("raw_exec");
     }
 
@@ -297,5 +285,18 @@ public class NomadSlaveTemplate implements Describable<NomadSlaveTemplate> {
 
     public String getExtraHosts() {
         return extraHosts;
+    }
+
+    @Extension
+    public static final class DescriptorImpl extends Descriptor<NomadSlaveTemplate> {
+
+        public DescriptorImpl() {
+            load();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return null;
+        }
     }
 }

@@ -1,5 +1,9 @@
 package org.jenkinsci.plugins.nomad;
 
+import com.cloudbees.plugins.credentials.CredentialsMatchers;
+import com.cloudbees.plugins.credentials.CredentialsProvider;
+import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
+import com.cloudbees.plugins.credentials.domains.DomainRequirement;
 import com.google.common.base.Strings;
 import hudson.Extension;
 import hudson.model.Descriptor;
@@ -11,29 +15,24 @@ import hudson.slaves.Cloud;
 import hudson.slaves.NodeProvisioner;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
-import hudson.util.Secret;
 import jenkins.model.Jenkins;
 import jenkins.slaves.JnlpSlaveAgentProtocol;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.jenkinsci.plugins.nomad.Api.JobInfo;
+import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
-import com.cloudbees.plugins.credentials.CredentialsMatchers;
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import static com.cloudbees.plugins.credentials.CredentialsMatchers.filter;
-import static com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials;
-import static com.cloudbees.plugins.credentials.CredentialsMatchers.withId;
-import static com.cloudbees.plugins.credentials.domains.URIRequirementBuilder.fromUri;
-import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
-import com.cloudbees.plugins.credentials.domains.DomainRequirement;
-import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.cloudbees.plugins.credentials.CredentialsMatchers.filter;
+import static com.cloudbees.plugins.credentials.CredentialsMatchers.withId;
+import static com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials;
 import static org.apache.commons.lang.StringUtils.trimToEmpty;
 
 public class NomadCloud extends AbstractCloudImpl {
@@ -44,13 +43,11 @@ public class NomadCloud extends AbstractCloudImpl {
 
     private final String nomadUrl;
     private final String nomadACLCredentialsId;
+    private final Boolean prune;
     private String jenkinsUrl;
     private String jenkinsTunnel;
     private String slaveUrl;
     private int workerTimeout = 1;
-
-    private final Boolean prune;
-
     private NomadApi nomad;
 
     private int pending = 0;
@@ -65,8 +62,7 @@ public class NomadCloud extends AbstractCloudImpl {
             String workerTimeout,
             String nomadACLCredentialsId,
             Boolean prune,
-            List<? extends NomadSlaveTemplate> templates)
-    {
+            List<? extends NomadSlaveTemplate> templates) {
         super(name, null);
 
         this.nomadACLCredentialsId = nomadACLCredentialsId;
@@ -85,6 +81,21 @@ public class NomadCloud extends AbstractCloudImpl {
         }
 
         readResolve();
+    }
+
+    private static String secretFor(String credentialsId) {
+        List<StringCredentials> creds = filter(
+                lookupCredentials(StringCredentials.class,
+                        Jenkins.getInstance(),
+                        ACL.SYSTEM,
+                        Collections.emptyList()),
+                withId(trimToEmpty(credentialsId))
+        );
+        if (creds.size() > 0) {
+            return creds.get(0).getSecret().getPlainText();
+        } else {
+            return null;
+        }
     }
 
     private Object readResolve() {
@@ -150,70 +161,6 @@ public class NomadCloud extends AbstractCloudImpl {
 
     }
 
-    private class ProvisioningCallback implements Callable<Node> {
-
-        String slaveName;
-        NomadSlaveTemplate template;
-        NomadCloud cloud;
-
-        public ProvisioningCallback(String slaveName, NomadSlaveTemplate template, NomadCloud cloud) {
-            this.slaveName = slaveName;
-            this.template = template;
-            this.cloud = cloud;
-        }
-
-        public Node call() throws Exception {
-            final NomadSlave slave = new NomadSlave(
-                    slaveName,
-                    name,
-                    template,
-                    template.getLabels(),
-                    new NomadRetentionStrategy(template.getIdleTerminationInMinutes()),
-                    Collections.emptyList()
-            );
-            Jenkins.get().addNode(slave);
-
-            // Support for Jenkins security
-            String jnlpSecret = "";
-            if (Jenkins.get().isUseSecurity()) {
-                jnlpSecret = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(slaveName);
-            }
-
-            LOGGER.log(Level.INFO, "Asking Nomad to schedule new Jenkins slave");
-            nomad.startSlave(cloud, slaveName, getNomadACL(), jnlpSecret, template);
-
-            // Check scheduling success
-            Callable<Boolean> callableTask = () -> {
-                try {
-                    LOGGER.log(Level.INFO, "Slave scheduled, waiting for connection");
-                    Objects.requireNonNull(slave.toComputer()).waitUntilOnline();
-                } catch (InterruptedException e) {
-                    LOGGER.log(Level.SEVERE, "Waiting for connection was interrupted");
-                    return false;
-                }
-                return true;
-            };
-
-            // Schedule a slave and wait for the computer to come online
-            ExecutorService executorService = Executors.newCachedThreadPool();
-            Future<Boolean> future = executorService.submit(callableTask);
-
-            try{
-                future.get(cloud.workerTimeout, TimeUnit.MINUTES);
-                LOGGER.log(Level.INFO, "Connection established");
-            } catch (Exception ex) {
-                LOGGER.log(Level.SEVERE, "Slave computer did not come online within " + workerTimeout + " minutes, terminating slave"+ slave);
-                slave.terminate();
-                throw new RuntimeException("Timed out waiting for agent to start up. Timeout: " + workerTimeout + " minutes.");
-            } finally {
-                future.cancel(true);
-                executorService.shutdown();
-                pending -= template.getNumExecutors();
-            }
-            return slave;
-        }
-    }
-
     // Find the correct template for job
     public NomadSlaveTemplate getTemplate(Label label) {
         for (NomadSlaveTemplate t : templates) {
@@ -232,6 +179,81 @@ public class NomadCloud extends AbstractCloudImpl {
         return Optional.ofNullable(getTemplate(label)).isPresent();
     }
 
+    // Getters
+    public String getName() {
+        return name;
+    }
+
+    public String getNomadUrl() {
+        return nomadUrl;
+    }
+
+    public String getJenkinsUrl() {
+        return jenkinsUrl;
+    }
+
+    public void setJenkinsUrl(String jenkinsUrl) {
+        this.jenkinsUrl = jenkinsUrl;
+    }
+
+    public String getSlaveUrl() {
+        return slaveUrl;
+    }
+
+    public void setSlaveUrl(String slaveUrl) {
+        this.slaveUrl = slaveUrl;
+    }
+
+    public int getWorkerTimeout() {
+        return workerTimeout;
+    }
+
+    public void setWorkerTimeout(String workerTimeout) {
+        try {
+            this.workerTimeout = Integer.parseInt(workerTimeout);
+        } catch (NumberFormatException ex) {
+            LOGGER.log(Level.WARNING, "Failed to parse timeout defaulting to current value (default: 1 minute): " + workerTimeout + " minutes");
+        }
+    }
+
+    public String getNomadACLCredentialsId() {
+        return nomadACLCredentialsId;
+    }
+
+    public String getNomadACL() {
+        return secretFor(this.getNomadACLCredentialsId());
+    }
+
+    public Boolean getPrune() {
+        if (prune == null)
+            return false;
+
+        return prune;
+    }
+
+    public void setNomad(NomadApi nomad) {
+        this.nomad = nomad;
+    }
+
+    public int getPending() {
+        return pending;
+    }
+
+    public String getJenkinsTunnel() {
+        return jenkinsTunnel;
+    }
+
+    public void setJenkinsTunnel(String jenkinsTunnel) {
+        this.jenkinsTunnel = jenkinsTunnel;
+    }
+
+    public List<NomadSlaveTemplate> getTemplates() {
+        return Collections.unmodifiableList(templates);
+    }
+
+    public NomadApi Nomad() {
+        return nomad;
+    }
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<Cloud> {
@@ -286,94 +308,67 @@ public class NomadCloud extends AbstractCloudImpl {
         }
     }
 
-    // Getters
-    public String getName() {
-        return name;
-    }
+    private class ProvisioningCallback implements Callable<Node> {
 
-    public String getNomadUrl() {
-        return nomadUrl;
-    }
+        String slaveName;
+        NomadSlaveTemplate template;
+        NomadCloud cloud;
 
-    public String getJenkinsUrl() {
-        return jenkinsUrl;
-    }
-
-    public String getSlaveUrl() {
-        return slaveUrl;
-    }
-
-    public int getWorkerTimeout() {
-        return workerTimeout;
-    }
-
-    public String getNomadACLCredentialsId() {
-        return nomadACLCredentialsId;
-    }
-
-    public String getNomadACL() {
-        return secretFor(this.getNomadACLCredentialsId());
-    }
-
-    private static String secretFor(String credentialsId) {
-        List<StringCredentials> creds = filter(
-                lookupCredentials(StringCredentials.class,
-                        Jenkins.getInstance(),
-                        ACL.SYSTEM,
-                        Collections.<DomainRequirement>emptyList()),
-                withId(trimToEmpty(credentialsId))
-        );
-        if (creds.size() > 0) {
-            return creds.get(0).getSecret().getPlainText();
-        } else {
-            return null;
+        public ProvisioningCallback(String slaveName, NomadSlaveTemplate template, NomadCloud cloud) {
+            this.slaveName = slaveName;
+            this.template = template;
+            this.cloud = cloud;
         }
-    }
 
-    public void setJenkinsUrl(String jenkinsUrl) {
-        this.jenkinsUrl = jenkinsUrl;
-    }
+        public Node call() throws Exception {
+            final NomadSlave slave = new NomadSlave(
+                    slaveName,
+                    name,
+                    template,
+                    template.getLabels(),
+                    new NomadRetentionStrategy(template.getIdleTerminationInMinutes()),
+                    Collections.emptyList()
+            );
+            Jenkins.get().addNode(slave);
 
-    public void setSlaveUrl(String slaveUrl) {
-        this.slaveUrl = slaveUrl;
-    }
+            // Support for Jenkins security
+            String jnlpSecret = "";
+            if (Jenkins.get().isUseSecurity()) {
+                jnlpSecret = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(slaveName);
+            }
 
-    public Boolean getPrune() {
-        if (prune == null)
-            return false;
+            LOGGER.log(Level.INFO, "Asking Nomad to schedule new Jenkins slave");
+            nomad.startSlave(cloud, slaveName, getNomadACL(), jnlpSecret, template);
 
-        return prune;
-    }
+            // Check scheduling success
+            Callable<Boolean> callableTask = () -> {
+                try {
+                    LOGGER.log(Level.INFO, "Slave scheduled, waiting for connection");
+                    Objects.requireNonNull(slave.toComputer()).waitUntilOnline();
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.SEVERE, "Waiting for connection was interrupted");
+                    return false;
+                }
+                return true;
+            };
 
-    public void setWorkerTimeout(String workerTimeout) {
-        try {
-            this.workerTimeout = Integer.parseInt(workerTimeout);
-        } catch(NumberFormatException ex) {
-            LOGGER.log(Level.WARNING, "Failed to parse timeout defaulting to current value (default: 1 minute): " + workerTimeout + " minutes");
+            // Schedule a slave and wait for the computer to come online
+            ExecutorService executorService = Executors.newCachedThreadPool();
+            Future<Boolean> future = executorService.submit(callableTask);
+
+            try {
+                future.get(cloud.workerTimeout, TimeUnit.MINUTES);
+                LOGGER.log(Level.INFO, "Connection established");
+            } catch (Exception ex) {
+                LOGGER.log(Level.SEVERE, "Slave computer did not come online within " + workerTimeout + " minutes, terminating slave" + slave);
+                slave.terminate();
+                throw new RuntimeException("Timed out waiting for agent to start up. Timeout: " + workerTimeout + " minutes.");
+            } finally {
+                future.cancel(true);
+                executorService.shutdown();
+                pending -= template.getNumExecutors();
+            }
+            return slave;
         }
-    }
-
-    public void setNomad(NomadApi nomad) {
-        this.nomad = nomad;
-    }
-
-    public int getPending() {
-        return pending;
-    }
-
-    public String getJenkinsTunnel() {
-        return jenkinsTunnel;
-    }
-
-    public void setJenkinsTunnel(String jenkinsTunnel) {
-        this.jenkinsTunnel = jenkinsTunnel;
-    }
-
-    public List<NomadSlaveTemplate> getTemplates() {
-        return Collections.unmodifiableList(templates);
-    }
-
-    public NomadApi Nomad() {
-        return nomad;
     }
 }

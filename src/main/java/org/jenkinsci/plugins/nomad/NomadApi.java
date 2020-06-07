@@ -1,26 +1,27 @@
 package org.jenkinsci.plugins.nomad;
 
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import hudson.Util;
-import org.jenkinsci.plugins.nomad.Api.Job;
 import okhttp3.*;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.nomad.Api.*;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class NomadApi {
 
-    private static final Logger LOGGER = Logger.getLogger(NomadApi.class.getName());
-
-    private static final OkHttpClient client = new OkHttpClient();
-
-    private final String nomadApi;
-
     public static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
+    private static final Logger LOGGER = Logger.getLogger(NomadApi.class.getName());
+    private static final OkHttpClient client = new OkHttpClient();
+    private final String nomadApi;
 
     NomadApi(String nomadApi) {
         this.nomadApi = nomadApi;
@@ -29,10 +30,10 @@ public final class NomadApi {
     void startSlave(NomadCloud cloud, String slaveName, String nomadToken, String jnlpSecret, NomadSlaveTemplate template) {
 
         String slaveJob = buildSlaveJob(
-            slaveName,
-            jnlpSecret,
-            cloud,
-            template
+                slaveName,
+                jnlpSecret,
+                cloud,
+                template
         );
 
         LOGGER.log(Level.FINE, slaveJob);
@@ -46,7 +47,7 @@ public final class NomadApi {
                 builder = builder.header("X-Nomad-Token", nomadToken);
 
             Request request = builder.put(body)
-                .build();
+                    .build();
 
             client.newCall(request).execute().body().close();
         } catch (IOException e) {
@@ -96,15 +97,15 @@ public final class NomadApi {
 
                 body.close();
             }
-        } catch (IOException e){
+        } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to retrieve running jobs", e);
         }
 
         return nomadJobs;
     }
 
-    private Map<String,Object> buildDriverConfig(String name, String secret, NomadCloud cloud, NomadSlaveTemplate template) {
-        Map<String,Object> driverConfig = new HashMap<>();
+    private Map<String, Object> buildDriverConfig(String name, String secret, NomadCloud cloud, NomadSlaveTemplate template) {
+        Map<String, Object> driverConfig = new HashMap<>();
 
         if (template.getUsername() != null && !template.getUsername().isEmpty()) {
             Map<String, String> authConfig = new HashMap<>();
@@ -173,8 +174,7 @@ public final class NomadApi {
 
             String prefixCmd = template.getPrefixCmd();
             // If an addtional command is defined - prepend it to jenkins slave invocation
-            if (!prefixCmd.isEmpty())
-            {
+            if (!prefixCmd.isEmpty()) {
                 driverConfig.put("command", "/bin/bash");
                 String argString =
                         prefixCmd + "; java -cp /local/slave.jar hudson.remoting.jnlp.Main -headless ";
@@ -182,8 +182,7 @@ public final class NomadApi {
                 args.clear();
                 args.add("-c");
                 args.add(argString);
-            }
-            else {
+            } else {
                 driverConfig.put("command", "java");
                 args.add(0, "-cp");
                 args.add(1, "/local/slave.jar");
@@ -210,7 +209,7 @@ public final class NomadApi {
             if (securityOpt != null && !securityOpt.isEmpty()) {
                 driverConfig.put("security_opt", StringUtils.split(securityOpt, ", "));
             }
-            
+
             String capAdd = template.getCapAdd();
             if (capAdd != null && !capAdd.isEmpty()) {
                 driverConfig.put("cap_add", StringUtils.split(capAdd, ", "));
@@ -243,13 +242,13 @@ public final class NomadApi {
                 template.getSwitchUser(),
                 buildDriverConfig(name, secret, cloud, template),
                 new Resource(
-                    template.getCpu(),
-                    template.getMemory(),
-                    networks
+                        template.getCpu(),
+                        template.getMemory(),
+                        networks
                 ),
                 new LogConfig(1, 10),
                 new Artifact[]{
-                    new Artifact(cloud.getSlaveUrl(), null, "/local/")
+                        new Artifact(cloud.getSlaveUrl(), null, "/local/")
                 }
         );
 

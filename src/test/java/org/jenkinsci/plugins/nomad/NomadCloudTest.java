@@ -13,9 +13,9 @@ import java.util.Set;
 
 public class NomadCloudTest {
 
-    private NomadSlaveTemplate slaveTemplate = Mockito.mock(NomadSlaveTemplate.class);
-    private LabelAtom label = Mockito.mock(LabelAtom.class);
-    private NomadCloud nomadCloud = new NomadCloud(
+    private final NomadSlaveTemplate slaveTemplate = Mockito.mock(NomadSlaveTemplate.class);
+    private final LabelAtom label = Mockito.mock(LabelAtom.class);
+    private final NomadCloud nomadCloud = new NomadCloud(
             "nomad",
             "nomadUrl",
             "jenkinsUrl",

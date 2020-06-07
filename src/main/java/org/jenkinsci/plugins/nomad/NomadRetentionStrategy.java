@@ -3,7 +3,7 @@ package org.jenkinsci.plugins.nomad;
 import hudson.model.Descriptor;
 import hudson.slaves.CloudRetentionStrategy;
 
-public class NomadRetentionStrategy extends CloudRetentionStrategy{
+public class NomadRetentionStrategy extends CloudRetentionStrategy {
 
     public NomadRetentionStrategy(int idleMinutes) {
         super(idleMinutes);

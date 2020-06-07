@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.nomad;
 
 import hudson.model.Node;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -15,17 +14,18 @@ import static org.junit.Assert.assertTrue;
  */
 public class NomadApiTest {
 
-    private NomadApi nomadApi = new NomadApi("http://localhost");
-    private List<NomadConstraintTemplate> constraintTest = new ArrayList<NomadConstraintTemplate>();
-    private NomadSlaveTemplate slaveTemplate = new NomadSlaveTemplate(
+    private final NomadApi nomadApi = new NomadApi("http://localhost");
+    private final List<NomadConstraintTemplate> constraintTest = new ArrayList<NomadConstraintTemplate>();
+    private final NomadSlaveTemplate slaveTemplate = new NomadSlaveTemplate(
             "test", "300", "256", "100",
             null, constraintTest, "remoteFs", false, "3", true, "1", Node.Mode.NORMAL,
             "ams", "0", "image", "dc01", "", "", false, "bridge",
-            "", true, "/mnt:/mnt", "jenkins", new ArrayList<NomadPortTemplate>() {},
-            "my_host:192.168.1.1,","apparmor=unconfined, seccomp=unconfined","SYS_ADMIN, SYSLOG", "SYS_ADMIN, SYSLOG"
+            "", true, "/mnt:/mnt", "jenkins", new ArrayList<NomadPortTemplate>() {
+    },
+            "my_host:192.168.1.1,", "apparmor=unconfined, seccomp=unconfined", "SYS_ADMIN, SYSLOG", "SYS_ADMIN, SYSLOG"
     );
 
-    private NomadCloud nomadCloud = new NomadCloud(
+    private final NomadCloud nomadCloud = new NomadCloud(
             "nomad",
             "nomadUrl",
             "jenkinsUrl",

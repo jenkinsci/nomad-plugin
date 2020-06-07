@@ -4,6 +4,11 @@ public class Update {
     private Integer Stagger;
     private Integer MaxParallel;
 
+    public Update(Integer stagger, Integer maxParallel) {
+        Stagger = stagger;
+        MaxParallel = maxParallel;
+    }
+
     public Integer getMaxParallel() {
         return MaxParallel;
     }
@@ -18,10 +23,5 @@ public class Update {
 
     public void setStagger(Integer stagger) {
         Stagger = stagger;
-    }
-
-    public Update(Integer stagger, Integer maxParallel) {
-        Stagger = stagger;
-        MaxParallel = maxParallel;
     }
 }

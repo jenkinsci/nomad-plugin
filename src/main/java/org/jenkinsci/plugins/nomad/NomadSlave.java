@@ -7,45 +7,40 @@ import hudson.model.Node;
 import hudson.model.TaskListener;
 import hudson.slaves.*;
 import jenkins.model.Jenkins;
+import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.kohsuke.stapler.DataBoundConstructor;
-
 public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
 
     private static final Logger LOGGER = Logger.getLogger(NomadSlave.class.getName());
-
-    private final Boolean reusable;
-
     private static final String NODE_DESCRIPTION = "Nomad Jenkins Slave";
-
+    private final Boolean reusable;
     private final String cloudName;
     private final int idleTerminationInMinutes;
 
     public NomadSlave(
-        String name,
-        String cloudName,
-        NomadSlaveTemplate template,
-        String labelString,
-        NomadRetentionStrategy retentionStrategy,
-        List<? extends NodeProperty<?>> nodeProperties
+            String name,
+            String cloudName,
+            NomadSlaveTemplate template,
+            String labelString,
+            NomadRetentionStrategy retentionStrategy,
+            List<? extends NodeProperty<?>> nodeProperties
     ) throws Descriptor.FormException, IOException {
         super(
-            name,
-            NODE_DESCRIPTION,
-            template.getRemoteFs(),
-            template.getNumExecutors(),
-            template.getMode(),
-            labelString,
-            new JNLPLauncher(false),
-            retentionStrategy,
-            nodeProperties
+                name,
+                NODE_DESCRIPTION,
+                template.getRemoteFs(),
+                template.getNumExecutors(),
+                template.getMode(),
+                labelString,
+                new JNLPLauncher(false),
+                retentionStrategy,
+                nodeProperties
         );
 
         this.cloudName = cloudName;
@@ -56,8 +51,8 @@ public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
 
     @DataBoundConstructor
     // {"name":"jenkins-95266550a531","cloudName":"NomadTest","labelString":"test","mode":"NORMAL","remoteFS":"/","numExecutors":"1","idleTerminationInMinutes":"10","reusable":true}
-    public NomadSlave(String name, String cloudName, String remoteFS, String numExecutors, Mode mode, String labelString, String idleTerminationInMinutes, boolean reusable) throws FormException, IOException{
-        super(name, NODE_DESCRIPTION, remoteFS, numExecutors, mode, labelString, new JNLPLauncher(), new NomadRetentionStrategy(idleTerminationInMinutes), Collections.<NodeProperty<?>>emptyList());
+    public NomadSlave(String name, String cloudName, String remoteFS, String numExecutors, Mode mode, String labelString, String idleTerminationInMinutes, boolean reusable) throws FormException, IOException {
+        super(name, NODE_DESCRIPTION, remoteFS, numExecutors, mode, labelString, new JNLPLauncher(), new NomadRetentionStrategy(idleTerminationInMinutes), Collections.emptyList());
 
         this.cloudName = cloudName;
         this.reusable = reusable;
@@ -68,6 +63,33 @@ public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
     @Override
     public Node asNode() {
         return this;
+    }
+
+    @Override
+    public AbstractCloudComputer<NomadSlave> createComputer() {
+        return new NomadComputer(this);
+    }
+
+    @Override
+    protected void _terminate(TaskListener listener) {
+        LOGGER.log(Level.INFO, "Asking Nomad to deregister slave '" + getNodeName() + "'");
+        getCloud().Nomad().stopSlave(getNodeName(), getCloud().getNomadACL());
+    }
+
+    public NomadCloud getCloud() {
+        return (NomadCloud) Jenkins.get().getCloud(cloudName);
+    }
+
+    public String getCloudName() {
+        return cloudName;
+    }
+
+    public Boolean getReusable() {
+        return reusable;
+    }
+
+    public int getIdleTerminationInMinutes() {
+        return this.idleTerminationInMinutes;
     }
 
     @Extension
@@ -88,32 +110,5 @@ public class NomadSlave extends AbstractCloudSlave implements EphemeralNode {
         public boolean isInstantiable() {
             return false;
         }
-    }
-
-    @Override
-    public AbstractCloudComputer<NomadSlave> createComputer() {
-        return new NomadComputer(this);
-    }
-
-    @Override
-    protected void _terminate(TaskListener listener)  {
-        LOGGER.log(Level.INFO, "Asking Nomad to deregister slave '" + getNodeName() + "'");
-        getCloud().Nomad().stopSlave(getNodeName(), getCloud().getNomadACL());
-    }
-
-    public NomadCloud getCloud() {
-        return (NomadCloud) Jenkins.get().getCloud(cloudName);
-    }
-
-    public String getCloudName() {
-        return cloudName;
-    }
-
-    public Boolean getReusable() {
-        return reusable;
-    }
-
-    public int getIdleTerminationInMinutes() {
-        return this.idleTerminationInMinutes;
     }
 }

@@ -14,15 +14,14 @@ public final class Job {
     private TaskGroup[] TaskGroups;
 
     public Job(
-        String ID,
-        String name,
-        String region,
-        String type,
-        Integer priority,
-        String[] datacenters,
-        List<Constraint> constraints,
-        TaskGroup[] taskGroups)
-    {
+            String ID,
+            String name,
+            String region,
+            String type,
+            Integer priority,
+            String[] datacenters,
+            List<Constraint> constraints,
+            TaskGroup[] taskGroups) {
         this.ID = ID;
         Name = name;
         Region = region;

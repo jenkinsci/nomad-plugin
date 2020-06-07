@@ -1,7 +1,6 @@
 package org.jenkinsci.plugins.nomad.Api;
 
-public final class JobInfo
-{
+public final class JobInfo {
 
     private String ID;
     private String Name;
@@ -10,12 +9,11 @@ public final class JobInfo
     private Integer Priority;
 
     public JobInfo(
-        String ID,
-        String name,
-        String type,
-        String status,
-        Integer priority)
-    {
+            String ID,
+            String name,
+            String type,
+            String status,
+            Integer priority) {
         this.ID = ID;
         Name = name;
         Type = type;
@@ -55,13 +53,11 @@ public final class JobInfo
         Priority = priority;
     }
 
-    public String getStatus()
-    {
+    public String getStatus() {
         return Status;
     }
 
-    public void setStatus(String status)
-    {
+    public void setStatus(String status) {
         Status = status;
     }
 }

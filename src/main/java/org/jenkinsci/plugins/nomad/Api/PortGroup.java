@@ -7,7 +7,7 @@ import java.util.List;
 
 public class PortGroup {
 
-    private List<Port> ports = new ArrayList<>();
+    private final List<Port> ports = new ArrayList<>();
 
     public PortGroup(List<? extends NomadPortTemplate> portTemplate) {
         for (NomadPortTemplate template : portTemplate) {
