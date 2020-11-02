@@ -38,6 +38,10 @@
             <f:textbox default="dc1"/>
         </f:entry>
 
+        <f:entry title="Vault Policies" field="vaultPolicies">
+            <f:textbox default=""/>
+        </f:entry>        
+
         <f:entry title="Switch User" field="switchUser">
             <f:textbox name="switchUser" default="" />
         </f:entry>
