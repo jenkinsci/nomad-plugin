@@ -51,6 +51,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
     private final String capAdd;
     private final String capDrop;
     private final String datacenters;
+    private final String vaultPolicies;
     private final Set<LabelAtom> labelSet;
     private String driver;
 
@@ -84,7 +85,8 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
             String extraHosts,
             String securityOpt,
             String capAdd,
-            String capDrop
+            String capDrop,
+            String vaultPolicies
     ) {
         if (StringUtils.isNotEmpty(prefix))
             this.prefix = prefix;
@@ -111,6 +113,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
         this.region = region;
         this.image = image;
         this.datacenters = datacenters;
+        this.vaultPolicies = vaultPolicies;
         this.username = username;
         this.password = password;
         this.privileged = privileged;
@@ -195,6 +198,10 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
 
     public String getDatacenters() {
         return datacenters;
+    }
+
+ public String getVaultPolicies() {
+        return vaultPolicies;
     }
 
     public int getPriority() {

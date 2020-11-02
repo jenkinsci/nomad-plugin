@@ -254,7 +254,8 @@ public final class NomadApi {
                 new LogConfig(1, 10),
                 new Artifact[]{
                         new Artifact(cloud.getWorkerUrl(), null, "/local/")
-                }
+                },
+                new Vault(template.getVaultPolicies().split(","))
         );
 
         TaskGroup taskGroup = new TaskGroup(
@@ -284,6 +285,7 @@ public final class NomadApi {
 
         jobJson.add("Job", gson.toJsonTree(job));
 
+        System.out.println(jobJson.toString());
         return gson.toJson(jobJson);
     }
 }

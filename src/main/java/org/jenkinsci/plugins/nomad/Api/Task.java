@@ -11,6 +11,7 @@ public class Task {
     private Resource Resources;
     private LogConfig LogConfig;
     private Artifact[] Artifacts;
+    private Vault Vault;
 
     public Task(
             String name,
@@ -19,7 +20,8 @@ public class Task {
             Map<String, Object> config,
             Resource resources,
             LogConfig logConfig,
-            Artifact[] artifacts
+            Artifact[] artifacts,
+            Vault vault
     ) {
         Name = name;
         Driver = driver;
@@ -28,6 +30,7 @@ public class Task {
         Resources = resources;
         LogConfig = logConfig;
         Artifacts = Arrays.copyOf(artifacts, artifacts.length);
+        Vault = vault;
     }
 
     public String getName() {
@@ -85,5 +88,13 @@ public class Task {
     public void setArtifacts(Artifact[] artifacts) {
         Artifacts = Arrays.copyOf(artifacts, artifacts.length);
     }
+
+    public Vault getVault() {
+        return Vault;
+    }
+
+    public void setVault(Vault vault) {
+        Vault = vault;
+    }    
 
 }
