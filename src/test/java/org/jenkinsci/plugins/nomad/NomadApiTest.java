@@ -22,7 +22,7 @@ public class NomadApiTest {
             "ams", "0", "image", "dc01", "", "", false, "bridge",
             "", true, "/mnt:/mnt", "jenkins", new ArrayList<NomadPortTemplate>() {
     },
-            "my_host:192.168.1.1,", "apparmor=unconfined, seccomp=unconfined", "SYS_ADMIN, SYSLOG", "SYS_ADMIN, SYSLOG", ""
+            "my_host:192.168.1.1,", "8.8.8.8,1.1.1.1", "apparmor=unconfined, seccomp=unconfined", "SYS_ADMIN, SYSLOG", "SYS_ADMIN, SYSLOG", ""
     );
 
     private final NomadCloud nomadCloud = new NomadCloud(

@@ -210,6 +210,11 @@ public final class NomadApi {
                 driverConfig.put("extra_hosts", StringUtils.split(extraHosts, ", "));
             }
 
+            String dnsServers = template.getDnsServers();
+            if (dnsServers != null && !dnsServers.isEmpty()) {
+              driverConfig.put("dns_servers", StringUtils.split(dnsServers, ", "));
+            }
+
             String securityOpt = template.getSecurityOpt();
             if (securityOpt != null && !securityOpt.isEmpty()) {
                 driverConfig.put("security_opt", StringUtils.split(securityOpt, ", "));

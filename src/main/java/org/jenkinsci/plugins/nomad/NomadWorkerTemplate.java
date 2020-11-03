@@ -47,6 +47,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
     private final Node.Mode mode;
     private final List<? extends NomadPortTemplate> ports;
     private final String extraHosts;
+    private final String dnsServers;
     private final String securityOpt;
     private final String capAdd;
     private final String capDrop;
@@ -83,6 +84,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
             String switchUser,
             List<? extends NomadPortTemplate> ports,
             String extraHosts,
+            String dnsServers,
             String securityOpt,
             String capAdd,
             String capDrop,
@@ -128,6 +130,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
             this.ports = ports;
         }
         this.extraHosts = extraHosts;
+        this.dnsServers = dnsServers;
         this.securityOpt = securityOpt;
         this.capAdd = capAdd;
         this.capDrop = capDrop;
@@ -200,7 +203,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
         return datacenters;
     }
 
- public String getVaultPolicies() {
+    public String getVaultPolicies() {
         return vaultPolicies;
     }
 
@@ -291,6 +294,8 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
     public String getExtraHosts() {
         return extraHosts;
     }
+
+    public String getDnsServers() { return dnsServers; }
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<NomadWorkerTemplate> {

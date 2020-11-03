@@ -100,6 +100,9 @@
             <f:entry title="Extra Hosts" field="extraHosts">
                 <f:textbox name="extraHosts" field="extraHosts" default="" />
             </f:entry>
+            <f:entry title="DNS Servers" field="dnsServers">
+                <f:textbox name="dnsServers" field="dnsServers" default="" />
+            </f:entry>
             <f:entry title="Add Security Options" field="securityOpt">
                 <f:textbox name="securityOpt" field="securityOpt" default="" />
             </f:entry>
