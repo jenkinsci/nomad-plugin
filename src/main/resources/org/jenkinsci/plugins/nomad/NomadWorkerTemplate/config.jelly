@@ -114,7 +114,7 @@
             </f:entry>
         </f:optionalBlock>
 
-        <f:entry title="Device Plugins">
+        <f:entry title="Device Plugins" help="/plugin/nomad/help-devicePlugins.html">
             <f:repeatable field="devicePlugins">
             <st:include page="/org/jenkinsci/plugins/nomad/NomadDevicePluginsTemplate/config.jelly" class="org.jenkinsci.plugins.nomad.NomadDevicePluginTemplate$DescriptorImpl"/>
             </f:repeatable>
