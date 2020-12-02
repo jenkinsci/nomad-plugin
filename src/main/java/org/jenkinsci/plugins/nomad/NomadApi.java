@@ -27,6 +27,34 @@ public final class NomadApi {
         this.nomadApi = nomadApi;
     }
 
+    JobInfo[] getJobs(Request request) {
+        JobInfo[] jobs;
+        String body = checkResponseAndGetBody(request);
+        Gson gson = new Gson();
+
+        jobs = gson.fromJson(body, JobInfo[].class);
+        return jobs;
+    }
+
+    String checkResponseAndGetBody (Request request) {
+        String bodyString = "";
+        try ( Response response = client.newCall(request).execute();
+              ResponseBody body = response.body())
+        {
+            bodyString = body.string();
+
+            if (response.code() != 200)
+            {
+                LOGGER.log(Level.SEVERE, bodyString, bodyString);    
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage() + "\nRequest:\n" + request.toString());
+        } catch (NullPointerException e) {
+            LOGGER.log(Level.SEVERE, "Error: Got no Nomad response." + "\nRequest:\n" + request.toString());    
+        }
+        return bodyString;
+    }
+
     void startWorker(NomadCloud cloud, String workerName, String nomadToken, String jnlpSecret, NomadWorkerTemplate template) {
 
         String workerJob = buildWorkerJob(
@@ -38,24 +66,17 @@ public final class NomadApi {
 
         LOGGER.log(Level.FINE, workerJob);
 
-        try {
-            RequestBody body = RequestBody.create(JSON, workerJob);
-            Request.Builder builder = new Request.Builder()
-                    .url(this.nomadApi + "/v1/job/" + workerName + "?region=" + template.getRegion());
+        RequestBody body = RequestBody.create(JSON, workerJob);
+        Request.Builder builder = new Request.Builder()
+                .url(this.nomadApi + "/v1/job/" + workerName + "?region=" + template.getRegion());
 
-            if (StringUtils.isNotEmpty(nomadToken))
-                builder = builder.header("X-Nomad-Token", nomadToken);
+        if (StringUtils.isNotEmpty(nomadToken))
+            builder = builder.header("X-Nomad-Token", nomadToken);
 
-            Request request = builder.put(body)
-                    .build();
+        Request request = builder.put(body)
+                .build();
 
-            ResponseBody response = client.newCall(request).execute().body();
-            if (response != null) {
-                response.close();
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage(), e);
-        }
+        checkResponseAndGetBody(request);
     }
 
     void stopWorker(String workerName, String nomadToken) {
@@ -69,14 +90,7 @@ public final class NomadApi {
         Request request = builder.delete()
                 .build();
 
-        try {
-            ResponseBody response = client.newCall(request).execute().body();
-            if (response != null) {
-                response.close();
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage(), e);
-        }
+        checkResponseAndGetBody(request);
     }
 
     JobInfo[] getRunningWorkers(String prefix, String nomadToken) {
@@ -91,20 +105,7 @@ public final class NomadApi {
             builder = builder.addHeader("X-Nomad-Token", nomadToken);
 
         Request request = builder.build();
-
-        try {
-            ResponseBody body = client.newCall(request).execute().body();
-
-            if (body != null) {
-                Gson gson = new Gson();
-
-                nomadJobs = gson.fromJson(body.string(), JobInfo[].class);
-
-                body.close();
-            }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to retrieve running jobs", e);
-        }
+        nomadJobs = getJobs(request);
 
         return nomadJobs;
     }
@@ -242,6 +243,8 @@ public final class NomadApi {
     ) {
         PortGroup portGroup = new PortGroup(template.getPorts());
         Network network = new Network(1, portGroup.getPorts());
+        DevicePluginGroup devicePluginGroup = new DevicePluginGroup(template.getDevicePlugins());
+        List<Device> devices = devicePluginGroup.getDevicePlugins();
 
         ArrayList<Network> networks = new ArrayList<>(1);
         networks.add(network);
@@ -254,13 +257,14 @@ public final class NomadApi {
                 new Resource(
                         template.getCpu(),
                         template.getMemory(),
-                        networks
-                ),
+                        networks,
+                        devices
+                        ),
                 new LogConfig(1, 10),
                 new Artifact[]{
                         new Artifact(cloud.getWorkerUrl(), null, "/local/")
                 },
-                new Vault(template.getVaultPolicies().split(","))
+                new Vault(template.getVaultPolicies())
         );
 
         TaskGroup taskGroup = new TaskGroup(

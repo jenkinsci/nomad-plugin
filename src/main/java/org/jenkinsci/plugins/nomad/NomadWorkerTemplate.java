@@ -54,6 +54,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
     private final String datacenters;
     private final String vaultPolicies;
     private final Set<LabelAtom> labelSet;
+    private final List<? extends NomadDevicePluginTemplate> devicePlugins;
     private String driver;
 
     @DataBoundConstructor
@@ -88,7 +89,8 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
             String securityOpt,
             String capAdd,
             String capDrop,
-            String vaultPolicies
+            String vaultPolicies,
+            List<? extends NomadDevicePluginTemplate> devicePlugins
     ) {
         if (StringUtils.isNotEmpty(prefix))
             this.prefix = prefix;
@@ -115,7 +117,7 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
         this.region = region;
         this.image = image;
         this.datacenters = datacenters;
-        this.vaultPolicies = vaultPolicies;
+        this.vaultPolicies = Util.fixNull(vaultPolicies);
         this.username = username;
         this.password = password;
         this.privileged = privileged;
@@ -134,6 +136,12 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
         this.securityOpt = securityOpt;
         this.capAdd = capAdd;
         this.capDrop = capDrop;
+        if (devicePlugins == null) {
+            this.devicePlugins = Collections.emptyList();
+        } else {
+            this.devicePlugins = devicePlugins;
+        }
+
         readResolve();
     }
 
@@ -295,7 +303,12 @@ public class NomadWorkerTemplate implements Describable<NomadWorkerTemplate> {
         return extraHosts;
     }
 
+
     public String getDnsServers() { return dnsServers; }
+
+    public List<NomadDevicePluginTemplate> getDevicePlugins() {
+        return Collections.unmodifiableList(devicePlugins);
+    }
 
     @Extension
     public static final class DescriptorImpl extends Descriptor<NomadWorkerTemplate> {

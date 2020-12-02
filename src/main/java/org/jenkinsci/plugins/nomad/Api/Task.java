@@ -2,6 +2,7 @@ package org.jenkinsci.plugins.nomad.Api;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.List;
 
 public class Task {
     private String Name;
@@ -30,7 +31,11 @@ public class Task {
         Resources = resources;
         LogConfig = logConfig;
         Artifacts = Arrays.copyOf(artifacts, artifacts.length);
-        Vault = vault;
+        if (Boolean.TRUE.equals(vault.isEmpty())) {
+            Vault = null;    
+        } else {
+            Vault = vault;
+        }
     }
 
     public String getName() {
@@ -95,6 +100,6 @@ public class Task {
 
     public void setVault(Vault vault) {
         Vault = vault;
-    }    
+    }
 
 }
