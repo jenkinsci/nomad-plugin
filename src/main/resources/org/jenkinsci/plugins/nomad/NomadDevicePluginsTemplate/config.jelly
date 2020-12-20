@@ -2,7 +2,7 @@
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
 
-	<table width="100%">
+	<div>
 
 		<f:entry title="Name" field="name">
             <f:textbox/>
@@ -11,11 +11,11 @@
         <f:entry title="Count" field="count">
             <f:textbox/>
         </f:entry>
-    
+
         <f:entry>
             <f:repeatableDeleteButton />
         </f:entry>
 
-    </table>
+    </div>
 
 </j:jelly>
