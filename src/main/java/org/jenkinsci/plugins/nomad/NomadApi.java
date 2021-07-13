@@ -162,12 +162,12 @@ public final class NomadApi {
                 args.add(cloud.getJenkinsUrl());
             }
 
-            if (!cloud.getJenkinsTunnel().isEmpty()) {
+            if (cloud.getJenkinsTunnel() != null && !cloud.getJenkinsTunnel().isEmpty()) {
                 args.add("-tunnel");
                 args.add(cloud.getJenkinsTunnel());
             }
 
-            if (!template.getRemoteFs().isEmpty()) {
+            if (template.getRemoteFs() != null && !template.getRemoteFs().isEmpty()) {
                 args.add("-workDir");
                 args.add(Util.ensureEndsWith(template.getRemoteFs(), "/"));
             }
@@ -180,7 +180,7 @@ public final class NomadApi {
 
             String prefixCmd = template.getPrefixCmd();
             // If an addtional command is defined - prepend it to jenkins worker invocation
-            if (!prefixCmd.isEmpty()) {
+            if (prefixCmd != null && !prefixCmd.isEmpty()) {
                 driverConfig.put("command", "/bin/bash");
                 String argString =
                         prefixCmd + "; java -cp /local/slave.jar hudson.remoting.jnlp.Main -headless ";
