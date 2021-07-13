@@ -14,6 +14,25 @@
     <f:textbox default="http://127.0.0.1:4646"/>
   </f:entry>
 
+  <f:block>
+    <table>
+      <f:optionalBlock name="tlsEnabled" title="enable TLS" field="tlsEnabled" inline="true">
+        <f:entry title="Client certificate path" description="Path to the PKCS12 client certificate (aka Keystore).">
+          <f:textbox field="clientCertificate" />
+        </f:entry>
+        <f:entry title="Client certificate password (optional)" >
+          <f:password field="clientPassword" />
+        </f:entry>
+        <f:entry title="Server certificate path (optional)" description="Path to the PKCS12 server certificate (aka Truststore). Usually a common authority or a public key.">
+          <f:textbox field="serverCertificate" />
+        </f:entry>
+        <f:entry title="Server certificate password (optional)" >
+          <f:password field="serverPassword" />
+        </f:entry>
+      </f:optionalBlock>
+    </table>
+  </f:block>
+
   <f:entry title="Jenkins Base URL" field="jenkinsUrl" description="Jenkins base URL">
     <f:textbox default="${instance.getJenkinsUrl()}"/>
   </f:entry>
@@ -34,7 +53,7 @@
     <f:textbox default="${instance.getWorkerUrl()}"/>
   </f:entry>
 
-  <f:validateButton title="Test connection" progress="Testing API connectivity..." method="testConnection" with="nomadUrl"/>
+  <f:validateButton title="Test connection" progress="Testing API connectivity..." method="testConnection" with="nomadUrl,tlsEnabled,clientCertificate,clientPassword,serverCertificate,serverPassword"/>
 
   <f:entry title="Worker Templates">
     <f:repeatable field="templates">

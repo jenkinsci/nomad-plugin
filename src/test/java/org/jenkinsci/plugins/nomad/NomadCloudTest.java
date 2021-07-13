@@ -10,14 +10,20 @@ import org.mockito.Mockito;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.UUID;
 
 public class NomadCloudTest {
 
     private final NomadWorkerTemplate workerTemplate = Mockito.mock(NomadWorkerTemplate.class);
-    private final LabelAtom label = Mockito.mock(LabelAtom.class);
+    private final LabelAtom label = new LabelAtom(UUID.randomUUID().toString());
     private final NomadCloud nomadCloud = new NomadCloud(
             "nomad",
             "nomadUrl",
+            false,
+            null,
+            null,
+            null,
+            null,
             "jenkinsUrl",
             "jenkinsTunnel",
             "workerUrl",
@@ -29,7 +35,6 @@ public class NomadCloudTest {
     @Before
     public void setup() {
         Set<LabelAtom> labels = Collections.singleton(label);
-        Mockito.when(label.matches(Mockito.anyCollectionOf(LabelAtom.class))).thenReturn(true);
         Mockito.when(workerTemplate.createWorkerName()).thenReturn("worker-1", "worker-2", "worker-3");
         Mockito.when(workerTemplate.getNumExecutors()).thenReturn(1);
         Mockito.when(workerTemplate.getLabelSet()).thenReturn(labels);

@@ -44,6 +44,11 @@ public class NomadCloud extends AbstractCloudImpl {
     private final String nomadUrl;
     private final String nomadACLCredentialsId;
     private final Boolean prune;
+    private boolean tlsEnabled;
+    private String clientCertificate;
+    private String clientPassword;
+    private String serverCertificate;
+    private String serverPassword;
     private String jenkinsUrl;
     private String jenkinsTunnel;
     private String workerUrl;
@@ -56,6 +61,11 @@ public class NomadCloud extends AbstractCloudImpl {
     public NomadCloud(
             String name,
             String nomadUrl,
+            boolean tlsEnabled,
+            String clientCertificate,
+            String clientPassword,
+            String serverCertificate,
+            String serverPassword,
             String jenkinsUrl,
             String jenkinsTunnel,
             String workerUrl,
@@ -67,7 +77,11 @@ public class NomadCloud extends AbstractCloudImpl {
 
         this.nomadACLCredentialsId = nomadACLCredentialsId;
         this.nomadUrl = nomadUrl;
-
+        this.tlsEnabled = tlsEnabled;
+        this.clientCertificate = clientCertificate;
+        this.clientPassword = clientPassword;
+        this.serverCertificate = serverCertificate;
+        this.serverPassword = serverPassword;
         this.jenkinsUrl = jenkinsUrl;
         this.jenkinsTunnel = jenkinsTunnel;
         this.workerUrl = workerUrl;
@@ -99,7 +113,7 @@ public class NomadCloud extends AbstractCloudImpl {
     }
 
     private Object readResolve() {
-        nomad = new NomadApi(nomadUrl);
+        nomad = new NomadApi(this);
 
         if (jenkinsUrl.equals("")) {
             jenkinsUrl = Jenkins.get().getRootUrl();
@@ -255,6 +269,46 @@ public class NomadCloud extends AbstractCloudImpl {
         return nomad;
     }
 
+    public boolean isTlsEnabled() {
+        return tlsEnabled;
+    }
+
+    public void setTlsEnabled(boolean tlsEnabled) {
+        this.tlsEnabled = tlsEnabled;
+    }
+
+    public String getClientCertificate() {
+        return clientCertificate;
+    }
+
+    public void setClientCertificate(String clientCertificate) {
+        this.clientCertificate = clientCertificate;
+    }
+
+    public String getClientPassword() {
+        return clientPassword;
+    }
+
+    public void setClientPassword(String clientPassword) {
+        this.clientPassword = clientPassword;
+    }
+
+    public String getServerCertificate() {
+        return serverCertificate;
+    }
+
+    public void setServerCertificate(String serverCertificate) {
+        this.serverCertificate = serverCertificate;
+    }
+
+    public String getServerPassword() {
+        return serverPassword;
+    }
+
+    public void setServerPassword(String serverPassword) {
+        this.serverPassword = serverPassword;
+    }
+
     @Extension
     public static final class DescriptorImpl extends Descriptor<Cloud> {
 
@@ -267,15 +321,25 @@ public class NomadCloud extends AbstractCloudImpl {
         }
 
         @POST
-        public FormValidation doTestConnection(@QueryParameter("nomadUrl") String nomadUrl) {
+        public FormValidation doTestConnection(
+                @QueryParameter String nomadUrl,
+                @QueryParameter boolean tlsEnabled,
+                @QueryParameter String clientCertificate,
+                @QueryParameter String clientPassword,
+                @QueryParameter String serverCertificate,
+                @QueryParameter String serverPassword) {
             Objects.requireNonNull(Jenkins.get()).checkPermission(Jenkins.ADMINISTER);
             try {
                 Request request = new Request.Builder()
                         .url(nomadUrl + "/v1/agent/self")
                         .build();
 
-                OkHttpClient client = new OkHttpClient();
-                ResponseBody response = client.newCall(request).execute().body();
+                OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+                if (tlsEnabled) {
+                    OkHttpClientHelper.initTLS(clientBuilder, clientCertificate, clientPassword, serverCertificate, serverPassword);
+                }
+
+                ResponseBody response = clientBuilder.build().newCall(request).execute().body();
                 if (response != null) {
                     response.close();
                 }
@@ -335,7 +399,8 @@ public class NomadCloud extends AbstractCloudImpl {
 
             // Support for Jenkins security
             String jnlpSecret = "";
-            if (Jenkins.get().isUseSecurity()) {
+            if (Jenkins.get().isUseSecurity() || template.isDockerDriver()) {
+                // docker driver uses the classpath approach -> secret is mandatory
                 jnlpSecret = JnlpSlaveAgentProtocol.SLAVE_SECRET.mac(workerName);
             }
 
