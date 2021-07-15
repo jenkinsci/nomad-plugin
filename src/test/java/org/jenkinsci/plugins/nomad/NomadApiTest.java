@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -18,7 +17,6 @@ import static org.junit.Assert.assertTrue;
  */
 public class NomadApiTest {
 
-    private final NomadApi nomadApi = new NomadApi("http://localhost");
     private final List<NomadConstraintTemplate> constraintTest = new ArrayList<NomadConstraintTemplate>();
     private final NomadDevicePluginTemplate deviceTest = new NomadDevicePluginTemplate("nvidia/gpu", 1);
     private final List<NomadDevicePluginTemplate> devicePluginsTest = Arrays.asList(deviceTest);
@@ -34,6 +32,11 @@ public class NomadApiTest {
     private final NomadCloud nomadCloud = new NomadCloud(
             "nomad",
             "nomadUrl",
+            false,
+            null,
+            null,
+            null,
+            null,
             "jenkinsUrl",
             "jenkinsTunnel",
             "workerUrl",
@@ -41,6 +44,8 @@ public class NomadApiTest {
             "",
             false,
             Collections.singletonList(workerTemplate));
+
+    private final NomadApi nomadApi = new NomadApi(nomadCloud);
 
     @Test
     public void testStartWorker() {
